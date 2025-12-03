@@ -36,7 +36,8 @@ const HomePage: React.FC = () => {
         <nav className="navbar-links">
           <Link to="/">Home</Link>
           <Link to="/register">Register</Link>
-          <Link to="/donate">Donation</Link>
+          <Link to="/donate">Donate</Link>
+          <Link to="/admin-login">Admin</Link>
         </nav>
       </header>
 

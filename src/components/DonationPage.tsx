@@ -1,150 +1,129 @@
-import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
-import "./PaymentPage.css";
 import logo from "../assets/ibadan_north.png";
-import { Link } from "react-router-dom";
+import "./DonationPage.css";
 
-
-
-export default function PaymentPage() {
-  const { id } = useParams<{ id: string }>();
+export default function DonationPage() {
+  const [amount, setAmount] = useState<number>(0);
+  const [email, setEmail] = useState("");
+  const [fullName, setFullName] = useState("");
   const navigate = useNavigate();
-  const [user, setUser] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [voucher, setVoucher] = useState("");
-  const [processing, setProcessing] = useState(false);
 
-  useEffect(() => {
-    loadRegistration();
-  }, []);
-
-  async function loadRegistration() {
-    const { data, error } = await supabase
-      .from("registrations")
-      .select("*")
-      .eq("id", id)
-      .single();
-
-    if (error) {
-      alert("Unable to load registration.");
-      return setLoading(false);
-    }
-
-    setUser(data);
-    setLoading(false);
-  }
-
-  // ======================
-  // VERIFY VOUCHER
-  // ======================
-  async function verifyVoucher() {
-    if (!voucher.trim()) {
-      alert("Enter voucher code.");
+  const handleFlutterwave = async () => {
+    if (!amount || !email || !fullName) {
+      alert("Please enter your name, email and amount.");
       return;
     }
 
-    setProcessing(true);
+    // Insert donor temporarily into DB
+    const { data: inserted, error } = await supabase
+      .from("donations")
+      .insert([{ full_name: fullName, email, amount, status: "pending" }])
+      .select("id")
+      .single();
 
-    try {
-      const { data: voucherData, error } = await supabase
-        .from("vouchers")
-        .select("*")
-        .eq("code", voucher.trim().toUpperCase())
-        .eq("used", false)
-        .single();
-
-      if (error || !voucherData) {
-        alert("Invalid or already used voucher code.");
-        return setProcessing(false);
-      }
-
-      await supabase
-        .from("vouchers")
-        .update({ used: true, used_by: id })
-        .eq("id", voucherData.id);
-
-      await supabase
-        .from("registrations")
-        .update({ payment_status: "paid" })
-        .eq("id", id);
-
-      alert("Voucher accepted! Payment completed.");
-      navigate(`/success/${id}`);
-    } catch (err) {
-      alert("Unexpected error.");
-      console.error(err);
+    if (error) {
+      console.error(error);
+      alert("Error creating donation record.");
+      return;
     }
 
-    setProcessing(false);
-  }
+    const donationId = inserted.id;
 
-  // ======================
-// PAY WITH FLUTTERWAVE
-// ======================
-async function payWithFlutterwave() {
-  if (!user) return;
-
-  setProcessing(true);
-
-  const response = await fetch(
-    "https://toqkuvrbywyyqyicjehc.functions.supabase.co/flutterwave-pay",
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`, // VERY IMPORTANT
+    // OPEN FLUTTERWAVE POPUP
+    const FlutterwaveCheckout = (window as any).FlutterwaveCheckout;
+    FlutterwaveCheckout({
+      public_key: "YOUR_FLUTTERWAVE_PUBLIC_KEY",
+      tx_ref: "DYODON_" + Date.now(),
+      amount: amount,
+      currency: "NGN",
+      customer: {
+        email: email,
+        name: fullName,
       },
-      body: JSON.stringify({
-        full_name: user.full_name,
-        email: user.email,
-        amount: 4000,
-        regId: id,
-      }),
-    }
-  );
+      customizations: {
+        title: "Donation",
+        description: "DYO Support Donation",
+        logo: logo,
+      },
+      callback: async function (response: any) {
+        if (response.status === "successful") {
+          // Update donation status in DB
+          await supabase
+            .from("donations")
+            .update({ status: "paid", reference: response.transaction_id })
+            .eq("id", donationId);
 
-  const data = await response.json();
-  setProcessing(false);
-
-  if (!data?.data?.link) {
-    alert("Unable to initialize payment.");
-    return;
-  }
-
-  // Redirect to Flutterwave checkout
-  window.location.href = data.data.link;
-}
-
-
-
-  if (loading) return <p>Loading...</p>;
+          navigate(`/donation-receipt/${donationId}`);
+        } else {
+          alert("Payment not completed.");
+        }
+      },
+      onclose: function () {
+        console.log("Flutterwave popup closed.");
+      },
+    });
+  };
 
   return (
-  
-    
-    <div style={{ maxWidth: 640, margin: "20px auto", padding: 20 }}>
-      <div style={{ maxWidth: 640, margin: "5px auto", padding: 5 }}>
-       <header className="navbar">
+    <div className="donation-container">
+      {/* Background video */}
+      <video autoPlay muted loop className="background-video">
+        <source src="/background.mp4" type="video/mp4" />
+      </video>
+
+      {/* Navbar */}
+      <header className="navbar">
         <div className="navbar-left">
           <img src={logo} alt="Logo" className="logo" />
           <h1>Diocesan Youth Organization</h1>
         </div>
         <nav className="navbar-links">
-          <Link to="/HomePage">Home</Link>
+          <Link to="/">Home</Link>
+          <Link to="/register">Register</Link>
+          <Link to="/donate">Donate</Link>
         </nav>
       </header>
-      </div>
 
+      {/* Donation Form */}
+      <main className="donation-content">
+        <div className="donation-box">
+          <h2>Support the Ministry</h2>
+          <p>Your giving helps strengthen the work of God. Thank you!</p>
 
-      <section>
-        <h3>Or Pay Online</h3>
-        <p>Pay ₦4,000 via FlutterWave (securely handled)</p>
-        <button onClick={payWithFlutterwave} disabled={processing}>
-  Pay ₦4,000 Online
-</button>
+          <div className="donation-form">
+            <input
+              type="text"
+              placeholder="Full Name"
+              value={fullName}
+              onChange={(e) => setFullName(e.target.value)}
+              required
+            />
+            <input
+              type="email"
+              placeholder="Email Address"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+            />
+            <input
+              type="number"
+              placeholder="Enter Amount (₦)"
+              value={amount}
+              onChange={(e) => setAmount(Number(e.target.value))}
+              required
+            />
 
-      </section>
+            <button onClick={handleFlutterwave}>Donate Now</button>
+          </div>
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer className="footer">
+        <p>© {new Date().getFullYear()} Diocesan Youth Organization</p>
+      </footer>
     </div>
   );
 }
