@@ -58,7 +58,7 @@ html, body {
 }
 
 .navbar h1 {
-  font-size: 1.4rem;
+  font-size: 1.2rem;
   font-weight: bold;
   color: #fff;
 }
@@ -83,7 +83,7 @@ html, body {
   width: 100vw;
   max-width: 1200px;
   aspect-ratio: 16 / 9;
-  margin: 80px auto;
+  margin: 40px auto;
   overflow: hidden;
   border-radius: 25px;
   box-shadow: 0 4px 15px rgba(255, 255, 255, 0.2);

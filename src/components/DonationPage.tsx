@@ -1,124 +1,137 @@
 import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
-import logo from "../assets/ibadan_north.png";
-import "./DonationPage.css";
 
 export default function DonationPage() {
-  const [amount, setAmount] = useState<number>(0);
-  const [email, setEmail] = useState("");
-  const [fullName, setFullName] = useState("");
   const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [donor, setDonor] = useState({
+    full_name: "",
+    email: "",
+    amount: ""
+  });
 
-  const handleFlutterwave = async () => {
-    if (!amount || !email || !fullName) {
-      alert("Please enter your name, email and amount.");
-      return;
-    }
+  const handleChange = (e: any) => {
+    setDonor({ ...donor, [e.target.name]: e.target.value });
+  };
 
-    // Insert donor temporarily into DB
-    const { data: inserted, error } = await supabase
+  const loadFlutterwave = () => {
+    return new Promise((resolve) => {
+      const script = document.createElement("script");
+      script.src = "https://checkout.flutterwave.com/v3.js";
+      script.onload = resolve;
+      document.body.appendChild(script);
+    });
+  };
+
+  const initiateDonation = async (e: any) => {
+    e.preventDefault();
+    setLoading(true);
+
+    await loadFlutterwave();
+
+    // Insert donation row first
+    const { data, error } = await supabase
       .from("donations")
-      .insert([{ full_name: fullName, email, amount, status: "pending" }])
-      .select("id")
+      .insert([
+        {
+          full_name: donor.full_name,
+          email: donor.email,
+          amount: donor.amount,
+          status: "pending"
+        }
+      ])
+      .select()
       .single();
 
     if (error) {
-      console.error(error);
-      alert("Error creating donation record.");
+      alert("Database error");
+      setLoading(false);
       return;
     }
 
-    const donationId = inserted.id;
+    const donationId = data.id;
 
-    // OPEN FLUTTERWAVE POPUP
-    const FlutterwaveCheckout = (window as any).FlutterwaveCheckout;
+    // FLW popup
+    //@ts-ignore
     FlutterwaveCheckout({
-      public_key: "YOUR_FLUTTERWAVE_PUBLIC_KEY",
-      tx_ref: "DYODON_" + Date.now(),
-      amount: amount,
+      public_key: import.meta.env.VITE_FLW_PUBLIC_KEY,
+      tx_ref: `DONATION-${donationId}-${Date.now()}`,
+      amount: Number(donor.amount),
       currency: "NGN",
       customer: {
-        email: email,
-        name: fullName,
+        email: donor.email,
+        name: donor.full_name,
       },
-      customizations: {
-        title: "Donation",
-        description: "DYO Support Donation",
-        logo: logo,
-      },
-      callback: async function (response: any) {
-        if (response.status === "successful") {
-          // Update donation status in DB
+      callback: async (payment: any) => {
+        if (payment.status === "successful") {
           await supabase
             .from("donations")
-            .update({ status: "paid", reference: response.transaction_id })
+            .update({ status: "paid", flw_id: payment.transaction_id })
             .eq("id", donationId);
 
           navigate(`/donation-receipt/${donationId}`);
         } else {
-          alert("Payment not completed.");
+          alert("Payment failed or cancelled.");
         }
       },
-      onclose: function () {
-        console.log("Flutterwave popup closed.");
+      onclose: () => {
+        setLoading(false);
       },
     });
   };
 
   return (
-    <div className="donation-container">
-      {/* Navbar */}
-      <header className="navbar">
-        <div className="navbar-left">
-          <img src={logo} alt="Logo" className="logo" />
-          <h1>Diocesan Youth Organization</h1>
-        </div>
-        <nav className="navbar-links">
-          <Link to="/">Home</Link>
-          <Link to="/register">Register</Link>
-          <Link to="/donate">Donate</Link>
-        </nav>
-      </header>
+    <div className="donation-container" style={{ padding: 30 }}>
+      <h2 style={{ textAlign: "center" }}>Support Our Ministry</h2>
+      
+      <form
+        onSubmit={initiateDonation}
+        style={{
+          maxWidth: 400,
+          margin: "20px auto",
+          display: "flex",
+          flexDirection: "column",
+          gap: 10,
+        }}
+      >
+        <input
+          name="full_name"
+          placeholder="Full Name"
+          required
+          onChange={handleChange}
+        />
 
-      {/* Donation Form */}
-      <main className="donation-content">
-        <div className="donation-box">
-          <h2>Support the Ministry</h2>
-          <p>Your giving helps strengthen the work of God. Thank you!</p>
+        <input
+          name="email"
+          type="email"
+          placeholder="Email"
+          required
+          onChange={handleChange}
+        />
 
-          <div className="donation-form">
-            <input
-              type="text"
-              placeholder="Full Name"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              required
-            />
-            <input
-              type="email"
-              placeholder="Email Address"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-            />
-            <input
-              type="number"
-              placeholder="Enter Amount (₦)"
-              value={amount}
-              onChange={(e) => setAmount(Number(e.target.value))}
-              required
-            />
+        <input
+          name="amount"
+          type="number"
+          placeholder="Donation Amount (₦)"
+          required
+          onChange={handleChange}
+        />
 
-            <button onClick={handleFlutterwave}>Donate Now</button>
-          </div>
-        </div>
-      </main>
-
-      {/* Footer */}
-      <footer className="footer">
-        <p>© {new Date().getFullYear()} Diocesan Youth Organization</p>
-      </footer>
+        <button
+          type="submit"
+          disabled={loading}
+          style={{
+            padding: 12,
+            background: "#800000",
+            color: "white",
+            borderRadius: 8,
+            cursor: "pointer",
+          }}
+        >
+          {loading ? "Processing..." : "Donate"}
+        </button>
+      </form>
     </div>
   );
 }

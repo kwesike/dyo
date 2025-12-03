@@ -1,61 +1,45 @@
-import { useEffect, useRef, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useEffect, useState, useRef } from "react";
+import { useParams } from "react-router-dom";
 import html2canvas from "html2canvas";
 import { supabase } from "../lib/supabaseClient";
 import logo from "../assets/ibadan_north.png";
 
 export default function DonationReceipt() {
   const { id } = useParams();
-  const navigate = useNavigate();
   const receiptRef = useRef<HTMLDivElement>(null);
 
-  const [donor, setDonor] = useState<any>(null);
-  const [downloading, setDownloading] = useState(false);
+  const [info, setInfo] = useState<any>(null);
 
   useEffect(() => {
-    if (!id) return;
-
-    const loadDonor = async () => {
+    const load = async () => {
       const { data } = await supabase
         .from("donations")
         .select("*")
         .eq("id", id)
         .single();
-
-      setDonor(data);
+      setInfo(data);
     };
-
-    loadDonor();
+    load();
   }, [id]);
 
-  const handleDownload = async () => {
+  const downloadReceipt = async () => {
     if (!receiptRef.current) return;
 
-    setDownloading(true);
+    const canvas = await html2canvas(receiptRef.current, { scale: 3 });
+    const img = canvas.toDataURL("image/png");
 
-    const canvas = await html2canvas(receiptRef.current, {
-      scale: 3,
-      useCORS: true,
-      backgroundColor: null,
-    });
-
-    const link = document.createElement("a");
-    link.download = `${donor.full_name}_Donation_Receipt.png`;
-    link.href = canvas.toDataURL("image/png");
-    link.click();
-
-    setTimeout(() => navigate("/"), 1000);
+    const a = document.createElement("a");
+    a.href = img;
+    a.download = `Donation_Receipt_${info.full_name}.png`;
+    a.click();
   };
 
-  if (!donor)
-    return <div style={{ padding: 40, textAlign: "center" }}>Loading...</div>;
+  if (!info) return <div>Loading...</div>;
 
   return (
-    <div style={{ padding: 30, textAlign: "center" }}>
-      <h1 style={{ color: "green" }}>✔ Donation Successful!</h1>
-      <p>Thank you for your generosity.</p>
+    <div style={{ textAlign: "center", padding: 20 }}>
+      <h1 style={{ color: "green" }}>Thank You for Donating!</h1>
 
-      {/* RECEIPT DESIGN */}
       <div
         ref={receiptRef}
         style={{
@@ -63,63 +47,42 @@ export default function DonationReceipt() {
           margin: "20px auto",
           padding: 20,
           borderRadius: 20,
-          background: "linear-gradient(135deg, #fff7e6, #fdebd0, #fff)",
-          border: "4px solid #800000",
-          boxShadow: "0 6px 20px rgba(0,0,0,0.25)",
+          background: "white",
+          border: "5px solid #800000",
+          boxShadow: "0 4px 20px rgba(0,0,0,0.2)",
           textAlign: "center",
         }}
       >
-        <img src={logo} alt="Logo" style={{ width: 80 }} />
+        <img src={logo} alt="Logo" style={{ width: 90 }} />
 
-        <h2 style={{ color: "#800000", marginTop: 10 }}>
-          DONATION RECEIPT
-        </h2>
+        <h2 style={{ color: "#800000" }}>Donation Receipt</h2>
 
-        <hr />
+        <p><b>Name:</b> {info.full_name}</p>
+        <p><b>Email:</b> {info.email}</p>
+        <p><b>Amount:</b> ₦{info.amount}</p>
 
-        <p>
-          <b>Name:</b> {donor.full_name}
-        </p>
-        <p>
-          <b>Email:</b> {donor.email}
-        </p>
-        <p>
-          <b>Amount:</b> ₦{donor.amount}
-        </p>
-
-        <br />
-
-        {/* BARCODE (simple SVG) */}
-        <svg width="180" height="60">
-          <rect width="10" height="60" x="0" fill="#000" />
-          <rect width="10" height="60" x="20" fill="#000" />
-          <rect width="10" height="60" x="40" fill="#000" />
-          <rect width="10" height="60" x="70" fill="#000" />
-          <rect width="10" height="60" x="90" fill="#000" />
-          <rect width="10" height="60" x="120" fill="#000" />
-          <rect width="10" height="60" x="140" fill="#000" />
-        </svg>
-
-        <h3 style={{ marginTop: 10, color: "green" }}>
-          Thank You for Donating!
-        </h3>
+        {/* 🔥 BARCODE */}
+        <img
+          src={`https://barcodeapi.org/api/128/${id}`}
+          alt="Barcode"
+          style={{ width: "80%", marginTop: 10 }}
+        />
       </div>
 
       <button
-        onClick={handleDownload}
-        disabled={downloading}
+        onClick={downloadReceipt}
         style={{
-          padding: "12px 25px",
+          padding: "12px 24px",
           background: "#ffd700",
           border: "none",
-          color: "#800000",
-          borderRadius: 8,
+          borderRadius: 10,
           fontWeight: "bold",
           cursor: "pointer",
+          color: "#800000",
           marginTop: 10,
         }}
       >
-        {downloading ? "Generating Receipt..." : "Download Receipt"}
+        Download Receipt
       </button>
     </div>
   );

@@ -6,7 +6,7 @@ import AdminLogin from "./components/AdminLogin";
 import DonationPage from "./components/DonationPage";
 import PaymentPage from "./components/PaymentPage";
 import SuccessPage from "./components/SuccessPage";
-import PaymentComplete from "./components/PaymentComplete";
+import SuccessDonation from "./components/SuccessDonation";
 import VoucherGenerator from "./components/VoucherGenerator";
 
 
@@ -21,7 +21,7 @@ function App() {
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
          <Route path="/payment/:id" element={<PaymentPage />} />
         <Route path="/success/:id" element={<SuccessPage />} />
-        <Route path="/payment-complete" element={<PaymentComplete />} />
+        <Route path="/success-donation/:id" element={<SuccessDonation/>} />
         <Route path="/admin/vouchers" element={<VoucherGenerator />} />
 
 
