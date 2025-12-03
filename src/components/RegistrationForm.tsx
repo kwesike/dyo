@@ -177,17 +177,7 @@ export default function RegistrationForm() {
 
   return (
     <div className="registration-container">
-      <video
-  autoPlay
-  muted
-  loop
-  className="background-video"
-  style={{ position: "fixed", top: 0, left: 0, width: "100%", height: "100%", objectFit: "cover", zIndex: -1 }}
->
-        <source src="/background.mp4" type="video/mp4" />
-        Your browser does not support the video tag.
-      </video>
-
+      
       {/* Navbar */}
       <header className="navbar">
         <div className="navbar-left">
