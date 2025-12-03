@@ -80,7 +80,7 @@ html, body {
 ================================ */
 .carousel {
   position: relative;
-  width: 100vw;
+  width: 100%;
   max-width: 1260px;
   aspect-ratio: 16 / 9;
   margin: 80px auto;
