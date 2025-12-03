@@ -26,11 +26,6 @@ const HomePage: React.FC = () => {
 
   return (
     <div className="home-container">
-      {/* Background video */}
-      <video autoPlay muted loop className="background-video">
-        <source src="/background.mp4" type="video/mp4" />
-        Your browser does not support the video tag.
-      </video>
 
       {/* Navbar */}
       <header className="navbar">
