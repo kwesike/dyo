@@ -5,7 +5,7 @@
 }
 
 html, body {
-  width: 300%;
+  width: 100%;
   overflow-x: hidden;
   margin: 0;
   padding: 0;
@@ -19,7 +19,7 @@ html, body {
   min-height: 100vh;
   overflow: hidden;
   color: white;
-  width: 100%;
+  width: 100%vw;
   max-width: 100%;
 }
 
@@ -80,8 +80,8 @@ html, body {
 ================================ */
 .carousel {
   position: relative;
-  width: 100%;
-  max-width: 1260px;
+  width: 100vw;
+  max-width: 1200px;
   aspect-ratio: 16 / 9;
   margin: 80px auto;
   overflow: hidden;

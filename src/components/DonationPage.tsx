@@ -68,11 +68,6 @@ export default function DonationPage() {
 
   return (
     <div className="donation-container">
-      {/* Background video */}
-      <video autoPlay muted loop className="background-video">
-        <source src="/background.mp4" type="video/mp4" />
-      </video>
-
       {/* Navbar */}
       <header className="navbar">
         <div className="navbar-left">
