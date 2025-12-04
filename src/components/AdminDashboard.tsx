@@ -103,6 +103,14 @@ export default function AdminDashboard() {
       </div><br/>
       <button onClick={() => navigate('/admin/vouchers')} className="bg-blue-600 text-white px-3 py-2 rounded">Voucher Generator</button>
 
+      <button
+  onClick={() => navigate("/admin/tags")}
+  className="bg-purple-600 text-white px-3 py-2 rounded ml-2 hover:bg-purple-700"
+>
+  View All Tags
+</button>
+
+
       {loading ? (
         <p className="text-center text-gray-600">Loading registrations...</p>
       ) : filteredData.length === 0 ? (

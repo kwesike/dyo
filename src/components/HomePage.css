@@ -237,7 +237,7 @@ html, body {
   }
 
   .image-card {
-    width: 100%;
+    width: 100vw;
   }
 
   .image-card img {

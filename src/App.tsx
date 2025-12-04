@@ -8,6 +8,8 @@ import PaymentPage from "./components/PaymentPage";
 import SuccessPage from "./components/SuccessPage";
 import SuccessDonation from "./components/SuccessDonation";
 import VoucherGenerator from "./components/VoucherGenerator";
+import AdminTags from "./components/AdminTags";
+
 
 
 function App() {
@@ -23,6 +25,7 @@ function App() {
         <Route path="/success/:id" element={<SuccessPage />} />
         <Route path="/success-donation/:id" element={<SuccessDonation/>} />
         <Route path="/admin/vouchers" element={<VoucherGenerator />} />
+        <Route path="/admin/tags" element={<AdminTags />} />
 
 
       </Routes>
