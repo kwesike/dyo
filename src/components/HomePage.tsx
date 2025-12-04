@@ -78,8 +78,8 @@ const HomePage: React.FC = () => {
           <div className="image-card">
           <img src={bishop} alt="Bishop" />
           <p>Most Rev'd Williams Aladekugbe</p>
-          <p>Archbishop, Province of Ibadan </p>
-          <p>Bishop, Ibadan North Diocese</p>
+          <p style={{ marginTop: 5,}}>Archbishop, Province of Ibadan<br></br>Bishop, Ibadan North Diocese</p>
+          
           </div>
 
           <div className="image-card">
