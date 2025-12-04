@@ -84,30 +84,33 @@ export default function SuccessPage() {
     // Upload to supabase storage
     const fileName = `${user.full_name}_${Date.now()}.png`;
 
-    const { data: uploadData, error: uploadErr } = await supabase.storage
-      .from("tags")
-      .upload(fileName, adminBlob, {
-        contentType: "image/png",
-        upsert: true,
-      });
+    const adminFilePath = `admin-tags/${fileName}`;
 
-    if (!uploadErr) {
-      const adminTagUrl = supabase.storage.from("tags").getPublicUrl(fileName)
-        .data.publicUrl;
+const { error: uploadErr } = await supabase.storage
+  .from("tags")
+  .upload(adminFilePath, adminBlob, {
+    contentType: "image/png",
+    upsert: true,
+  });
 
-      // Save URL to database
-      await supabase
-        .from("registrations")
-        .update({ admin_tag_url: adminTagUrl })
-        .eq("id", id);
-    }
+if (!uploadErr) {
+  const adminTagUrl = supabase.storage
+    .from("tags")
+    .getPublicUrl(adminFilePath).data.publicUrl;
+
+  await supabase
+    .from("registrations")
+    .update({ admin_tag_url: adminTagUrl })
+    .eq("id", id);
+}
 
     /** ============================
      *  3️⃣ Redirect Home
      *  ============================ */
-    setTimeout(() => navigate("/"), 900);
-  };
-
+   setTimeout(() => {
+    navigate("/");
+  }, 1500);
+};
   if (!user) {
     return (
       <div style={{ padding: 40, textAlign: "center" }}>
