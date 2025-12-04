@@ -74,22 +74,23 @@ const HomePage: React.FC = () => {
       </main>
 
       {/* TEAM / IMAGES SECTION */}
-<div className="image-row">
-  <div className="image-card">
-    <img src={bishop} alt="Bishop" />
-    <p>Most Rev'd Williams Aladekugbe</p>
-  </div>
+      <h1>....Team....</h1>
+      <div className="image-row">
+          <div className="image-card">
+          <img src={bishop} alt="Bishop" />
+          <p>Most Rev'd Williams Aladekugbe</p>
+          </div>
 
-  <div className="image-card">
-    <img src={chap} alt="Chaplain" />
-    <p>Ven. Dr. Ilori L. Tolu-Kehinde </p>
-  </div>
+          <div className="image-card">
+          <img src={chap} alt="Chaplain" />
+          <p>Ven. Dr. Ilori L. Tolu-Kehinde </p>
+          </div>
 
-  <div className="image-card">
-    <img src={achap} alt="Assistant Chaplain" />
-    <p>Rev. Canon Adebayo Olayinka</p>
-  </div>
-</div>
+          <div className="image-card">
+          <img src={achap} alt="Assistant Chaplain" />
+          <p>Rev. Canon Adebayo Olayinka</p>
+        </div>
+      </div>
 
 
       {/* Footer */}
