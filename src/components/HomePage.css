@@ -216,7 +216,7 @@ html, body {
 
 /* IMAGE STYLE */
 .image-card img {
-  width: 100%;
+  width: 50%;
   aspect-ratio: 3 / 4;
   height: 300px;
   object-fit: cover;
