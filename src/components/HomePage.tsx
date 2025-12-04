@@ -78,16 +78,20 @@ const HomePage: React.FC = () => {
           <div className="image-card">
           <img src={bishop} alt="Bishop" />
           <p>Most Rev'd Williams Aladekugbe</p>
+          <p>Archbishop, Province of Ibadan </p>
+          <p>Bishop, Ibadan North Diocese</p>
           </div>
 
           <div className="image-card">
           <img src={chap} alt="Chaplain" />
           <p>Ven. Dr. Ilori L. Tolu-Kehinde </p>
+          <p>Diocesan Youth Chaplain </p>
           </div>
 
           <div className="image-card">
           <img src={achap} alt="Assistant Chaplain" />
           <p>Rev. Canon Adebayo Olayinka</p>
+          <p>Assistant Diocesan Youth Chaplain </p>
         </div>
       </div>
       </main>
