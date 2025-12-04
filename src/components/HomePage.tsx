@@ -75,12 +75,12 @@ const HomePage: React.FC = () => {
         {/* TEAM / IMAGES SECTION */}
       <h1>....Team....</h1>
       <div className="image-row">
-          <div className="image-card">
+          
           <img src={bishop} alt="Bishop" />
           <p >Most Rev'd Williams Aladekugbe</p>
           <p style={{ marginTop: 0.5,}}>Archbishop, Province of Ibadan<br></br>Bishop, Ibadan North Diocese</p>
           
-          </div>
+          
 
           <div className="image-card">
           <img src={chap} alt="Chaplain" />
