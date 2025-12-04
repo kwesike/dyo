@@ -202,7 +202,7 @@ export default function RegistrationForm() {
               <option>Male</option>
               <option>Female</option>
             </select>
-            <input type="date" name="date_of_birth" value={formData.date_of_birth} onChange={handleChange} required />
+            <input type="date" name="date_of_birth" placeholder="date of birth" value={formData.date_of_birth} onChange={handleChange} required />
             <select name="archdeaconry" value={formData.archdeaconry} onChange={handleChange} required>
               <option value="">Select Archdeaconry</option>
               <option>Agodi</option>
