@@ -105,8 +105,8 @@ Text: Proverbs 11:3
     crossOrigin="anonymous"
     alt="Participant"
     style={{
-      width: 150,
-      height: 150,
+      width: 200,
+      height: 200,
       borderRadius: "50%",
       objectFit: "cover",
       border: "4px solid #800000",
@@ -122,9 +122,9 @@ Text: Proverbs 11:3
   <p style={{ margin: 0, fontSize: 20 }}><b>Archdeaconry:</b>{user.archdeaconry}</p>
   <p style={{ margin: 0, fontSize: 20 }}><b>Church:</b>{user.church}</p>
 
-  <h3 style={{ marginTop: 10, color: "green", fontWeight: "bold", fontSize: 20 }}>
+  {/*<h3 style={{ marginTop: 10, color: "green", fontWeight: "bold", fontSize: 20 }}>
     I WILL BE ATTENDING
-  </h3>
+  </h3>*/}
 </div>
 
 

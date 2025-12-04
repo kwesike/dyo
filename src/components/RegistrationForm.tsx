@@ -203,7 +203,22 @@ export default function RegistrationForm() {
               <option>Female</option>
             </select>
             <input type="date" name="date_of_birth" value={formData.date_of_birth} onChange={handleChange} required />
-            <input name="archdeaconry" placeholder="Archdeaconry" value={formData.archdeaconry} onChange={handleChange} required />
+            <select name="archdeaconry" value={formData.archdeaconry} onChange={handleChange} required>
+              <option value="">Select Archdeaconry</option>
+              <option>Agodi</option>
+              <option>Agbrigidi</option>
+              <option>Agugu</option>
+              <option>Akinyele</option>
+              <option>Alakia/Egbeda</option>
+              <option>Alegongo</option>
+              <option>Cathedral</option>
+              <option>Igbo Elerin</option>
+              <option>Kutayi</option>
+              <option>Olorunda</option>
+              <option>Olorunsogo/Akanran</option>
+              <option>Orogun</option>
+              <option>Yemetu</option>
+            </select>
             <input name="church" placeholder="Church" value={formData.church} onChange={handleChange} required />
             <input name="occupation" placeholder="Occupation" value={formData.occupation} onChange={handleChange} required />
             <input name="educational_qualification" placeholder="Educational Qualification" value={formData.educational_qualification} onChange={handleChange} required />
