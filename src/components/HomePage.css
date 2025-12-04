@@ -212,9 +212,11 @@ html, body {
   min-width: 200px;
 }
 
+
 /* IMAGE STYLE */
 .image-card img {
   width: 100%;
+  aspect-ratio: 3 / 4;
   height: 300px;
   object-fit: cover;
   border-radius: 14px;
