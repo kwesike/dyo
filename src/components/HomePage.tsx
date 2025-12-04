@@ -71,9 +71,8 @@ const HomePage: React.FC = () => {
             &#10095;
           </button>
         </div>
-      </main>
 
-      {/* TEAM / IMAGES SECTION */}
+        {/* TEAM / IMAGES SECTION */}
       <h1>....Team....</h1>
       <div className="image-row">
           <div className="image-card">
@@ -91,6 +90,7 @@ const HomePage: React.FC = () => {
           <p>Rev. Canon Adebayo Olayinka</p>
         </div>
       </div>
+      </main>
 
 
       {/* Footer */}
