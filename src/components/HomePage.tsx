@@ -7,6 +7,9 @@ import pic2 from "../assets/pic111.jpg";
 import pic3 from "../assets/pic1.jpg";
 import pic4 from "../assets/pic1111.jpg";
 import pic5 from "../assets/pic11111.jpg";
+import bishop from "../assets/bishop.jpg";
+import chap from "../assets/chap.jpg";
+import achap from "../assets.achap.jpg";
 
 const HomePage: React.FC = () => {
   const images = [pic1, pic2, pic3, pic4, pic5];
@@ -69,6 +72,25 @@ const HomePage: React.FC = () => {
           </button>
         </div>
       </main>
+
+      {/* TEAM / IMAGES SECTION */}
+<div className="image-row">
+  <div className="image-card">
+    <img src={bishop} alt="Bishop" />
+    <p>Most Rev'd Williams Aladekugbe</p>
+  </div>
+
+  <div className="image-card">
+    <img src={chap} alt="Chaplain" />
+    <p>Ven. Dr. Ilori L. Tolu-Kehinde </p>
+  </div>
+
+  <div className="image-card">
+    <img src={achap} alt="Assistant Chaplain" />
+    <p>Rev. Canon Adebayo Olayinka</p>
+  </div>
+</div>
+
 
       {/* Footer */}
       <footer className="footer">

@@ -195,4 +195,53 @@ html, body {
     font-size: 1.5rem;
     padding: 6px 10px;
   }
+/* IMAGE ROW WRAPPER */
+.image-row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  padding: 40px 20px;
+  flex-wrap: wrap;
+}
+
+/* EACH IMAGE CARD */
+.image-card {
+  text-align: center;
+  width: 30%;
+  min-width: 200px;
+}
+
+/* IMAGE STYLE */
+.image-card img {
+  width: 100%;
+  height: 220px;
+  object-fit: cover;
+  border-radius: 14px;
+  box-shadow: 0px 6px 20px rgba(0, 0, 0, 0.2);
+}
+
+/* NAME TEXT */
+.image-card p {
+  margin-top: 10px;
+  font-weight: bold;
+  font-size: 1.1rem;
+  color: #800000; /* Your maroon theme */
+}
+
+/* MOBILE RESPONSIVE */
+@media (max-width: 768px) {
+  .image-row {
+    flex-direction: column;
+    gap: 25px;
+  }
+
+  .image-card {
+    width: 90%;
+  }
+
+  .image-card img {
+    height: 200px;
+  }
+}
 
