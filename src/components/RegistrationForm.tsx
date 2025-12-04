@@ -218,6 +218,7 @@ export default function RegistrationForm() {
               <option>Olorunsogo/Akanran</option>
               <option>Orogun</option>
               <option>Yemetu</option>
+              <option>Non-Anglican</option>
             </select>
             <input name="church" placeholder="Church" value={formData.church} onChange={handleChange} required />
             <input name="occupation" placeholder="Occupation" value={formData.occupation} onChange={handleChange} required />
