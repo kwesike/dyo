@@ -1,3 +1,12 @@
+// ==========================================
+// FIX 1: Declare Flutterwave globally
+// ==========================================
+declare global {
+  interface Window {
+    FlutterwaveCheckout: any;
+  }
+}
+
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
@@ -35,7 +44,7 @@ export default function PaymentPage() {
   }
 
   // ==================================================
-  // 🔐 VERIFY VOUCHER
+  // VERIFY VOUCHER
   // ==================================================
   async function verifyVoucher() {
     if (!voucher.trim()) return alert("Enter voucher code.");
@@ -74,45 +83,61 @@ export default function PaymentPage() {
   }
 
   // ==================================================
-  // 🟦 PAY ONLINE VIA FLUTTERWAVE
-  // Calls Supabase Edge Function → Redirects to Flutterwave
+  // PAY ONLINE WITH FLUTTERWAVE
   // ==================================================
   async function payOnline() {
-    setOnlinePaying(true);
-
     try {
-      const response = await fetch(
-        `${import.meta.env.VITE_SUPABASE_FUNCTION_URL}/flutterwave-pay`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            registration_id: id,
-            email: user.email,
-            full_name: user.full_name,
-            amount: 4000, // ← UPDATE YOUR AMOUNT
-            redirect_url: `${window.location.origin}/success/${id}`,
-          }),
-        }
-      );
+      const PUBLIC_KEY = import.meta.env.VITE_FLUTTERWAVE_PUBLIC_KEY;
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        alert("Payment initialization failed.");
-        console.error(data);
-        setOnlinePaying(false);
+      if (!PUBLIC_KEY) {
+        alert("Flutterwave public key missing.");
         return;
       }
 
-      // Redirect to Flutterwave Checkout
-      window.location.href = data.payment_link;
-    } catch (err) {
-      console.error(err);
-      alert("Unable to initiate payment.");
-    }
+      setOnlinePaying(true);
 
-    setOnlinePaying(false);
+      window.FlutterwaveCheckout({
+        public_key: PUBLIC_KEY,
+        tx_ref: "DYC-" + Date.now(),
+        amount: 4000, // your online fee
+        currency: "NGN",
+        payment_options: "card,ussd,banktransfer",
+        customer: {
+          email: user.email,
+          name: user.full_name,
+        },
+        meta: {
+          registration_id: id,
+        },
+        customizations: {
+          title: "Diocesan Youth Convention",
+          description: "Convention Registration Payment",
+          logo,
+        },
+        callback: async function (paymentData: any) {
+          console.log("Payment callback:", paymentData);
+
+          if (paymentData.status === "successful") {
+            await supabase
+              .from("registrations")
+              .update({ payment_status: "paid" })
+              .eq("id", id);
+
+            navigate(`/success/${id}`);
+          } else {
+            alert("Payment not completed.");
+          }
+        },
+        onclose: function () {
+          console.log("Payment popup closed.");
+          setOnlinePaying(false);
+        },
+      });
+    } catch (error) {
+      console.error(error);
+      alert("Payment initialization failed.");
+      setOnlinePaying(false);
+    }
   }
 
   if (loading) return <p>Loading...</p>;
@@ -137,9 +162,7 @@ export default function PaymentPage() {
         <p><strong>Payment status:</strong> {user?.payment_status}</p>
       </div>
 
-      {/* ============================ */}
-      {/* 🔹 Voucher Section */}
-      {/* ============================ */}
+      {/* Voucher */}
       <section style={{ marginTop: 20 }}>
         <h3>Use Voucher</h3>
         <input
@@ -149,16 +172,18 @@ export default function PaymentPage() {
           placeholder="Enter voucher code"
           style={{ width: "100%", padding: 10 }}
         />
-        <button onClick={verifyVoucher} disabled={processing} style={{ marginTop: 10 }}>
+        <button
+          onClick={verifyVoucher}
+          disabled={processing}
+          style={{ marginTop: 10 }}
+        >
           {processing ? "Processing..." : "Verify Voucher"}
         </button>
       </section>
 
       <hr style={{ margin: "30px 0" }} />
 
-      {/* ============================ */}
-      {/* 🟦 Flutterwave PAY ONLINE */}
-      {/* ============================ */}
+      {/* Flutterwave */}
       <h3>Or Pay Online (Flutterwave)</h3>
       <button
         onClick={payOnline}
