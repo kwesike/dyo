@@ -29,10 +29,11 @@ export default function SuccessPage() {
   }, [id]);
 
   const handleDownload = async () => {
-  if (!tagRef.current) return;
+  if (!tagRef.current || !user) return;
 
   setDownloading(true);
 
+  // 1️⃣ Generate image
   const canvas = await html2canvas(tagRef.current, {
     scale: 3,
     useCORS: true,
@@ -41,13 +42,46 @@ export default function SuccessPage() {
   });
 
   const imgData = canvas.toDataURL("image/png");
+
+  // 2️⃣ Download for user
   const link = document.createElement("a");
   link.href = imgData;
   link.download = `${user.full_name}_Convention_Tag.png`;
   link.click();
 
-  setTimeout(() => navigate("/"), 800);//autoredirect
+  // 3️⃣ Convert base64 → Blob
+  const res = await fetch(imgData);
+  const blob = await res.blob();
+
+  // 4️⃣ UPLOAD ADMIN TAG (IMPORTANT)
+  const adminFileName = `admin_tags/${user.archdeaconry}/${user.full_name
+    .replace(/\s+/g, "_")}_${user.id}.png`;
+
+  const { error: adminUploadError } = await supabase.storage
+    .from("tags")
+    .upload(adminFileName, blob, {
+      contentType: "image/png",
+      upsert: true,
+    });
+
+  if (adminUploadError) {
+    console.error("Admin tag upload failed:", adminUploadError);
+  }
+
+  // 5️⃣ SAVE ADMIN TAG URL TO DB (OPTIONAL BUT GOOD)
+  const { data: publicData } = supabase.storage
+    .from("tags")
+    .getPublicUrl(adminFileName);
+
+  await supabase
+    .from("registrations")
+    .update({ tag_url: publicData.publicUrl })
+    .eq("id", user.id);
+
+  // 6️⃣ Redirect home
+  setTimeout(() => navigate("/"), 800);
 };
+
 
 
   if (!user) {
