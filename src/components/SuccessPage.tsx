@@ -102,7 +102,7 @@ export default function SuccessPage() {
   ref={tagRef}
   style={{
     width: 350,
-    margin: "20px auto",
+    margin: "10px auto",
     padding: 20,
     borderRadius: 25,
     color: "#000",

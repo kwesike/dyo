@@ -10,6 +10,8 @@ import pic5 from "../assets/pic11111.jpg";
 import bishop from "../assets/bishop.jpg";
 import chap from "../assets/chap.jpg";
 import achap from "../assets/achap.jpg";
+import CountdownTimer from "../components/CountdownTimer";
+
 
 const HomePage: React.FC = () => {
   const images = [pic1, pic2, pic3, pic4, pic5];
@@ -43,6 +45,18 @@ const HomePage: React.FC = () => {
           <Link to="/admin-login">Admin</Link>
         </nav>
       </header>
+      <CountdownTimer
+  title="🚨 Registration Closes In"
+  targetDate="2025-12-23T20:00:00"
+  danger
+/>
+
+<CountdownTimer
+  title="🎉 Countdown to Youth Convention 2025"
+  targetDate="2025-12-28T09:00:00"
+/>
+
+
 
       {/* Carousel */}
       <main className="main-content">
