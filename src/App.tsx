@@ -9,6 +9,7 @@ import SuccessPage from "./components/SuccessPage";
 import SuccessDonation from "./components/SuccessDonation";
 import VoucherGenerator from "./components/VoucherGenerator";
 import AdminTags from "./components/AdminTags";
+import LeadershipRegistration from "./components/LeadershipRegistration"
 
 
 
@@ -26,6 +27,11 @@ function App() {
         <Route path="/success-donation/:id" element={<SuccessDonation/>} />
         <Route path="/admin/vouchers" element={<VoucherGenerator />} />
         <Route path="/admin/tags" element={<AdminTags />} />
+        <Route
+  path="/leadership-retreat"
+  element={<LeadershipRegistration />}
+/>
+
 
 
       </Routes>

@@ -40,20 +40,17 @@ const HomePage: React.FC = () => {
         </div>
         <nav className="navbar-links">
           <Link to="/">Home</Link>
+          <Link to="/leadership-retreat">Register For Leadership Retreat</Link>
           {/*<Link to="/register">Register</Link>*/}
           <Link to="/donate">Donate</Link>
           <Link to="/admin-login">Admin</Link>
         </nav>
       </header>
-      <CountdownTimer
-  title="🚨 Registration Closes In"
-  targetDate="2025-12-23T20:00:00"
-  danger
-/>
+      
 
 <CountdownTimer
-  title="🎉 Countdown to Youth Convention 2025"
-  targetDate="2025-12-28T09:00:00"
+  title="🎉 Countdown to Youth Leadership Retreat 2025"
+  targetDate="2026-01-17T09:00:00"
 />
 
 
