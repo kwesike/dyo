@@ -9,7 +9,7 @@ import SuccessPage from "./components/SuccessPage";
 import SuccessDonation from "./components/SuccessDonation";
 import VoucherGenerator from "./components/VoucherGenerator";
 import AdminTags from "./components/AdminTags";
-import LeadershipRegistration from "./components/LeadershipRegistration"
+import MissionVoluteer from "./components/MissionVoluteer"
 
 
 
@@ -28,8 +28,8 @@ function App() {
         <Route path="/admin/vouchers" element={<VoucherGenerator />} />
         <Route path="/admin/tags" element={<AdminTags />} />
         <Route
-  path="/leadership-retreat"
-  element={<LeadershipRegistration />}
+  path="/mission-voluteer"
+  element={<MissionVoluteer />}
 />
 
 

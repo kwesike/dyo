@@ -4,17 +4,16 @@ import { useNavigate, Link } from "react-router-dom";
 import logo from "../assets/ibadan_north.png";
 import "./RegistrationForm.css";
 
-export default function LeadershipRegistration() {
+export default function MissionVoluteer() {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
     full_name: "",
     church: "",
-    position_held: "",
     archdeaconry: "",
-    position_held_in_arch:"",
-    position_held_in_dio:"",
+    email: "",  
     phone_number:"",
+    reason_for_registering: "",
   });
 
   const [loading, setLoading] = useState(false);
@@ -32,7 +31,7 @@ export default function LeadershipRegistration() {
 
     try {
       const { error } = await supabase
-        .from("leadership_registrations")
+        .from("village_mission")
         .insert([formData]);
 
       if (error) throw error;
@@ -57,14 +56,14 @@ export default function LeadershipRegistration() {
         </div>
         <nav className="navbar-links">
           <Link to="/">Home</Link>
-          <Link to="/register">Youth Convention</Link>
+          <Link to="/register"></Link>
         </nav>
       </header>
 
       {/* Form */}
       <main className="form-section">
         <div className="form-box">
-          <h2>Leadership Retreat Registration</h2>
+          <h2>Village Mission Voluteers Registration</h2>
 
           <form onSubmit={handleSubmit}>
             <input
@@ -83,13 +82,6 @@ export default function LeadershipRegistration() {
               required
             />
 
-            <input
-              name="position_held"
-              placeholder="Position Held In Church(e.g. Vicar, Youth Leader)"
-              value={formData.position_held}
-              onChange={handleChange}
-              required
-            />
 
             <select
               name="archdeaconry"
@@ -114,25 +106,26 @@ export default function LeadershipRegistration() {
             </select>
 
             <input
-              name="position_held_in_arch"
-              placeholder="Position Held in Archdeaconry"
-              value={formData.position_held_in_arch}
+              name="email"
+              placeholder="Email"
+              value={formData.email}
               onChange={handleChange}
               required
             />
 
-            <input
-              name="position_held_in_dio"
-              placeholder="Position Held in Diocese"
-              value={formData.position_held_in_dio}
-              onChange={handleChange}
-              required
-            />
 
             <input
               name="phone_number"
               placeholder="Phone Number"
               value={formData.phone_number}
+              onChange={handleChange}
+              required
+            />
+
+             <input
+              name="reason_for_registering"
+              placeholder="Why Do You Want To Be Part Of The Village Mission?"
+              value={formData.reason_for_registering}
               onChange={handleChange}
               required
             />
