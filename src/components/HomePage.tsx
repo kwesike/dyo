@@ -40,7 +40,7 @@ const HomePage: React.FC = () => {
         </div>
         <nav className="navbar-links">
           <Link to="/">Home</Link>
-          <Link to="/mission-voluteer">Voluteer for Village Missions</Link>
+          <Link to="/mission-voluteer">Volunteer for Village Missions</Link>
           {/*<Link to="/register">Register</Link>*/}
           <Link to="/donate">Donate</Link>
           <Link to="/admin-login">Admin</Link>

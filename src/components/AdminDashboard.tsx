@@ -22,14 +22,14 @@ interface Registration {
   created_at?: string;
 }
 
-interface LeadershipRegistration {
+interface MissionVoluteer {
   id: number;
   full_name: string;
+  phone_number: string;
+  email: string;
   church: string;
-  position_held: string;
   archdeaconry: string;
-  position_held_in_arch: string;
-  position_held_in_dio: string;
+  reason_for_registering: string;
   created_at?: string;
 }
 
@@ -38,10 +38,10 @@ interface LeadershipRegistration {
 export default function AdminDashboard() {
   const navigate = useNavigate();
 
-  const [activeTab, setActiveTab] = useState<"youth" | "leadership">("youth");
+  const [activeTab, setActiveTab] = useState<"youth" | "mission volunteers">("youth");
 
   const [registrations, setRegistrations] = useState<Registration[]>([]);
-  const [leadershipRegs, setLeadershipRegs] = useState<LeadershipRegistration[]>(
+  const [missionVoluteers, setMissionVoluteers] = useState<MissionVoluteer[]>(
     []
   );
 
@@ -62,7 +62,7 @@ export default function AdminDashboard() {
 
   useEffect(() => {
     if (activeTab === "youth") fetchRegistrations();
-    else fetchLeadershipRegistrations();
+    else fetchMissionVoluteer();
   }, [activeTab]);
 
   const fetchRegistrations = async () => {
@@ -77,15 +77,15 @@ export default function AdminDashboard() {
     setLoading(false);
   };
 
-  const fetchLeadershipRegistrations = async () => {
+  const fetchMissionVoluteer = async () => {
     setLoading(true);
     const { data, error } = await supabase
-      .from("leadership_registrations")
+      .from("village_mission")
       .select("*")
       .order("id", { ascending: false });
 
     if (error) console.error(error);
-    else setLeadershipRegs(data || []);
+    else setMissionVoluteers(data || []);
     setLoading(false);
   };
 
@@ -98,7 +98,7 @@ export default function AdminDashboard() {
       r.church.toLowerCase().includes(search.toLowerCase())
   );
 
-  const filteredLeadership = leadershipRegs.filter(
+  const filteredMissionVoluteers = missionVoluteers.filter(
     (r) =>
       r.full_name.toLowerCase().includes(search.toLowerCase()) ||
       r.archdeaconry.toLowerCase().includes(search.toLowerCase()) ||
@@ -109,7 +109,7 @@ export default function AdminDashboard() {
 
   const exportToExcel = () => {
     const data =
-      activeTab === "youth" ? filteredYouth : filteredLeadership;
+      activeTab === "youth" ? filteredYouth : filteredMissionVoluteers;
 
     const ws = XLSX.utils.json_to_sheet(data);
     const wb = XLSX.utils.book_new();
@@ -119,14 +119,14 @@ export default function AdminDashboard() {
       ws,
       activeTab === "youth"
         ? "Youth Registrations"
-        : "Leadership Registrations"
+      : "Mission Voluteers"
     );
 
     XLSX.writeFile(
       wb,
       activeTab === "youth"
         ? "Youth_Convention_Registrations.xlsx"
-        : "Leadership_Retreat_Registrations.xlsx"
+    : "Mission_Voluteersxlsx"
     );
   };
 
@@ -167,14 +167,14 @@ export default function AdminDashboard() {
         </button>
 
         <button
-          onClick={() => setActiveTab("leadership")}
+        onClick={() => setActiveTab("mission volunteers")}
           className={`px-4 py-2 rounded ${
-            activeTab === "leadership"
+            activeTab === "mission volunteers"
               ? "bg-purple-600 text-white"
               : "bg-gray-200"
           }`}
         >
-          Leadership Retreat
+          Mission Voluteers
         </button>
       </div>
 
@@ -251,7 +251,7 @@ export default function AdminDashboard() {
           </table>
         </div>
       ) : (
-        /* ===== LEADERSHIP TABLE ===== */
+        /* ===== MISSION VOLUTEERS TABLE ===== */
         <div className="overflow-x-auto">
           <table className="w-full border text-sm">
             <thead>
@@ -259,20 +259,20 @@ export default function AdminDashboard() {
                 <th className="border px-2 py-1">Full Name</th>
                 <th className="border px-2 py-1">Church</th>
                 <th className="border px-2 py-1">Archdeaconry</th>
-                <th className="border px-2 py-1">Position (Church)</th>
-                <th className="border px-2 py-1">Position (Arch)</th>
-                <th className="border px-2 py-1">Position (Diocese)</th>
+                <th className="border px-2 py-1">Email</th>
+                <th className="border px-2 py-1">Phone Number</th>
+                <th className="border px-2 py-1">Reason for Registration</th>
               </tr>
             </thead>
             <tbody>
-              {filteredLeadership.map((reg) => (
+              {filteredMissionVoluteers.map((reg) => (
                 <tr key={reg.id} className="text-center">
                   <td className="border px-2 py-1">{reg.full_name}</td>
                   <td className="border px-2 py-1">{reg.church}</td>
                   <td className="border px-2 py-1">{reg.archdeaconry}</td>
-                  <td className="border px-2 py-1">{reg.position_held}</td>
-                  <td className="border px-2 py-1">{reg.position_held_in_arch}</td>
-                  <td className="border px-2 py-1">{reg.position_held_in_dio}</td>
+                  <td className="border px-2 py-1">{reg.email}</td>
+                  <td className="border px-2 py-1">{reg.phone_number}</td>
+                  <td className="border px-2 py-1">{reg.reason_for_registering}</td>
                 </tr>
               ))}
             </tbody>

@@ -63,7 +63,7 @@ export default function MissionVoluteer() {
       {/* Form */}
       <main className="form-section">
         <div className="form-box">
-          <h2>Village Mission Voluteers Registration</h2>
+          <h2>Village Mission Volunteers Registration</h2>
 
           <form onSubmit={handleSubmit}>
             <input
