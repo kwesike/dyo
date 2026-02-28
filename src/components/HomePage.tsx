@@ -10,13 +10,14 @@ import pic5 from "../assets/pic11111.jpg";
 import bishop from "../assets/bishop.jpg";
 import chap from "../assets/chap.jpg";
 import achap from "../assets/achap.jpg";
+import popupImage from "../assets/popup.png"; // add your image here
 import CountdownTimer from "../components/CountdownTimer";
 
 
 const HomePage: React.FC = () => {
   const images = [pic1, pic2, pic3, pic4, pic5];
   const [current, setCurrent] = useState(0);
-
+  const [showPopup, setShowPopup] = useState(true);
   // Auto change slides every 5 seconds
   useEffect(() => {
     const timer = setInterval(() => {
@@ -31,6 +32,32 @@ const HomePage: React.FC = () => {
 
   return (
     <div className="home-container">
+      {showPopup && (
+  <div className="popup-overlay">
+    <div className="popup-content">
+      
+      <button 
+        className="close-btn"
+        onClick={() => setShowPopup(false)}
+      >
+        
+      </button>
+
+      <img 
+        src={popupImage} 
+        alt="Convention Flyer" 
+        className="popup-image"
+      />
+
+      <Link to="/register">
+        <button className="attend-btn">
+          Click to Attend
+        </button>
+      </Link>
+
+    </div>
+  </div>
+)}
 
       {/* Navbar */}
       <header className="navbar">
