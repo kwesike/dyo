@@ -21,14 +21,20 @@ export default function RegistrationForm() {
   const [photo, setPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [photoProcessing, setPhotoProcessing] = useState(false);
+  const [photoUploading, setPhotoUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
 
   const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
+ const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
   if (!e.target.files || !e.target.files[0]) return;
+
+  setPhotoProcessing(true);
+  setUploadProgress(0);
 
   const originalFile = e.target.files[0];
   const reader = new FileReader();
@@ -84,21 +90,22 @@ export default function RegistrationForm() {
 
       // Convert to file
       canvas.toBlob(
-        (blob) => {
-          if (!blob) return;
+  (blob) => {
+    if (!blob) return;
 
-          const croppedFile = new File(
-            [blob],
-            originalFile.name.replace(/\.[^/.]+$/, "") + "_facecrop.jpg",
-            { type: "image/jpeg", lastModified: Date.now() }
-          );
+    const croppedFile = new File(
+      [blob],
+      originalFile.name.replace(/\.[^/.]+$/, "") + "_facecrop.jpg",
+      { type: "image/jpeg", lastModified: Date.now() }
+    );
 
-          setPhoto(croppedFile);
-          setPhotoPreview(URL.createObjectURL(croppedFile));
-        },
-        "image/jpeg",
-        0.8
-      );
+    setPhoto(croppedFile);
+    setPhotoPreview(URL.createObjectURL(croppedFile));
+    setPhotoProcessing(false);
+  },
+  "image/jpeg",
+  0.8
+);
     };
   };
 
@@ -128,12 +135,29 @@ export default function RegistrationForm() {
     // 2️⃣ Upload photo
     let photo_url = null;
 
-    if (photo) {
-      const fileName = `${Date.now()}_${photo.name}`;
+   if (photo) {
+  const fileName = `${Date.now()}_${photo.name}`;
 
-      const { error: uploadError } = await supabase.storage
-        .from("youth-photos")
-        .upload(fileName, photo);
+  setPhotoUploading(true);
+  setUploadProgress(0);
+
+  // Fake smooth progress animation
+  const progressInterval = setInterval(() => {
+    setUploadProgress((prev) => {
+      if (prev >= 90) return prev;
+      return prev + 5;
+    });
+  }, 200);
+
+  const { error: uploadError } = await supabase.storage
+    .from("youth-photos")
+    .upload(fileName, photo);
+
+  clearInterval(progressInterval);
+
+  if (uploadError) throw uploadError;
+
+  setUploadProgress(100);
 
       if (uploadError) throw uploadError;
 
@@ -143,6 +167,9 @@ export default function RegistrationForm() {
 
       photo_url = urlData.publicUrl;
     }
+      setTimeout(() => {
+    setPhotoUploading(false);
+  }, 500);
 
     // // 3️⃣ Insert registration AND return inserted row
 const { data: insertedData, error: insertError } = await supabase
@@ -224,9 +251,50 @@ navigate(`/success/${insertedData.id}`);
               <img src={photoPreview} alt="Preview" className="photo-preview" />
             )}
 
-            <button type="submit" disabled={loading}>
-              {loading ? "Submitting..." : "Register"}
-            </button>
+            {photoProcessing && (
+  <p style={{ color: "#fcf8f8", fontWeight: "bold" }}>
+    🔄 Processing photo...
+  </p>
+)}
+
+{photoUploading && (
+  <div style={{ marginTop: 10 }}>
+    <p style={{ marginBottom: 5 }}>
+      📤 Uploading Photo... {uploadProgress}%
+    </p>
+    <div
+      style={{
+        width: "100%",
+        height: 10,
+        background: "#eee",
+        borderRadius: 6,
+        overflow: "hidden",
+      }}
+    >
+      <div
+        style={{
+          width: `${uploadProgress}%`,
+          height: "100%",
+          background: "#800000",
+          transition: "width 0.3s ease",
+        }}
+      />
+    </div>
+  </div>
+)}
+
+            <button
+  type="submit"
+  disabled={loading || photoProcessing || photoUploading}
+>
+  {loading
+    ? "Submitting..."
+    : photoUploading
+    ? "Uploading Photo..."
+    : photoProcessing
+    ? "Processing Photo..."
+    : "Register"}
+</button>
           </form>
         </div>
       </main>
