@@ -191,10 +191,10 @@ export default function SuccessPage() {
         width: "100%",
         background: "#fff",
         textAlign: "center",
-        padding: 3,
+        padding: 1,
       }}
     >
-      <h3 style={{ margin: 0, fontSize: 16 }}>
+      <h3 style={{ margin: 0, fontSize: 14 }}>
         FRIDAY 17TH APRIL, 2026
       </h3>
 
@@ -204,7 +204,7 @@ export default function SuccessPage() {
           color: "#fff",
           display: "inline-block",
           padding: "6px 14px",
-          marginTop: 3,
+          marginTop: 2,
           fontWeight: "bold",
           fontSize: 14,
         }}
@@ -212,7 +212,7 @@ export default function SuccessPage() {
         6pm - 6am
       </div>
 
-      <p style={{ marginTop: 6, fontSize: 13 }}>
+      <p style={{ marginTop: 3, fontSize: 13 }}>
         St. Paul’s Anglican Church, Yemetu, Ibadan
       </p>
     </div>
