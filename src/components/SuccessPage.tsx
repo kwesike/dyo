@@ -162,7 +162,7 @@ export default function SuccessPage() {
       <div
         style={{
          position: "absolute",
-    top: "95%",
+    top: "90%",
     left: "35%",
     transform: "translate(-50%, -50%)", // 👈 THIS centers it perfectly
     width: "100%",                       // optional, so it's not full width
@@ -191,7 +191,7 @@ export default function SuccessPage() {
         width: "100%",
         background: "#fff",
         textAlign: "center",
-        padding: 5,
+        padding: 3,
       }}
     >
       <h3 style={{ margin: 0, fontSize: 16 }}>
@@ -204,7 +204,7 @@ export default function SuccessPage() {
           color: "#fff",
           display: "inline-block",
           padding: "6px 14px",
-          marginTop: 6,
+          marginTop: 3,
           fontWeight: "bold",
           fontSize: 14,
         }}
