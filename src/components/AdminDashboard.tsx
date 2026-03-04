@@ -33,18 +33,32 @@ interface MissionVoluteer {
   created_at?: string;
 }
 
+interface IgnitionAttendance {
+  id: number;
+  full_name: string;
+  gender: string;
+  archdeaconry: string;
+  church: string;
+  phone: string;
+  email: string;
+  photo_url: string;
+  payment_status: string;
+  created_at?: string;
+}
 /* ================= COMPONENT ================= */
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
 
-  const [activeTab, setActiveTab] = useState<"youth" | "mission volunteers">("youth");
+  const [activeTab, setActiveTab] = useState<
+  "youth" | "mission volunteers" | "ignition"
+>("youth");
 
   const [registrations, setRegistrations] = useState<Registration[]>([]);
   const [missionVoluteers, setMissionVoluteers] = useState<MissionVoluteer[]>(
     []
   );
-
+  const [ignitionAttendance, setIgnitionAttendance] = useState<IgnitionAttendance[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
 
@@ -61,9 +75,10 @@ export default function AdminDashboard() {
   /* ================= FETCH DATA ================= */
 
   useEffect(() => {
-    if (activeTab === "youth") fetchRegistrations();
-    else fetchMissionVoluteer();
-  }, [activeTab]);
+  if (activeTab === "youth") fetchRegistrations();
+  else if (activeTab === "mission volunteers") fetchMissionVoluteer();
+  else fetchIgnitionAttendance();
+}, [activeTab]);
 
   const fetchRegistrations = async () => {
     setLoading(true);
@@ -89,6 +104,20 @@ export default function AdminDashboard() {
     setLoading(false);
   };
 
+  const fetchIgnitionAttendance = async () => {
+  setLoading(true);
+
+  const { data, error } = await supabase
+    .from("ignition_attendance")
+    .select("*")
+    .order("id", { ascending: false });
+
+  if (error) console.error(error);
+  else setIgnitionAttendance(data || []);
+
+  setLoading(false);
+};
+
   /* ================= SEARCH ================= */
 
   const filteredYouth = registrations.filter(
@@ -104,6 +133,13 @@ export default function AdminDashboard() {
       r.archdeaconry.toLowerCase().includes(search.toLowerCase()) ||
       r.church.toLowerCase().includes(search.toLowerCase())
   );
+
+  const filteredIgnition = ignitionAttendance.filter(
+  (r) =>
+    r.full_name.toLowerCase().includes(search.toLowerCase()) ||
+    r.archdeaconry.toLowerCase().includes(search.toLowerCase()) ||
+    r.church.toLowerCase().includes(search.toLowerCase())
+);
 
   /* ================= EXPORT ================= */
 
@@ -176,6 +212,16 @@ export default function AdminDashboard() {
         >
           Mission Voluteers
         </button>
+        <button
+  onClick={() => setActiveTab("ignition")}
+  className={`px-4 py-2 rounded ${
+    activeTab === "ignition"
+      ? "bg-orange-600 text-white"
+      : "bg-gray-200"
+  }`}
+>
+  Ignition Attendance
+</button>
       </div>
 
       {/* Search & Export */}
@@ -278,7 +324,48 @@ export default function AdminDashboard() {
             </tbody>
           </table>
         </div>
+        )} : {(
+
+  /* ===== IGNITION TABLE ===== */
+
+  <div className="overflow-x-auto">
+    <table className="w-full border text-sm">
+      <thead>
+        <tr className="bg-gray-100">
+          <th className="border px-2 py-1">Photo</th>
+          <th className="border px-2 py-1">Full Name</th>
+          <th className="border px-2 py-1">Gender</th>
+          <th className="border px-2 py-1">Archdeaconry</th>
+          <th className="border px-2 py-1">Church</th>
+          <th className="border px-2 py-1">Phone</th>
+          <th className="border px-2 py-1">Email</th>
+        </tr>
+      </thead>
+      <tbody>
+        {filteredIgnition.map((reg) => (
+          <tr key={reg.id} className="text-center">
+            <td className="border px-2 py-1">
+              {reg.photo_url ? (
+                <img
+                  src={reg.photo_url}
+                  className="w-10 h-10 rounded-full mx-auto"
+                />
+              ) : (
+                "N/A"
+              )}
+            </td>
+            <td className="border px-2 py-1">{reg.full_name}</td>
+            <td className="border px-2 py-1">{reg.gender}</td>
+            <td className="border px-2 py-1">{reg.archdeaconry}</td>
+            <td className="border px-2 py-1">{reg.church}</td>
+            <td className="border px-2 py-1">{reg.phone}</td>
+            <td className="border px-2 py-1">{reg.email}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table>
+  </div>
       )}
     </div>
-  );
+);
 }

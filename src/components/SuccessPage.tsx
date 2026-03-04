@@ -3,6 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import html2canvas from "html2canvas";
 import { supabase } from "../lib/supabaseClient";
 import logo from "../assets/LOGO.jpeg";
+import bgImage from "../assets/ignition-bg.jpeg";
 
 export default function SuccessPage() {
   const { id } = useParams();
@@ -34,9 +35,8 @@ export default function SuccessPage() {
 
   // 1️⃣ Generate image
   const canvas = await html2canvas(tagRef.current, {
-    scale: 3,
+    scale: 4,
     useCORS: true,
-    allowTaint: true,
     backgroundColor: null,
   });
 
@@ -101,64 +101,148 @@ export default function SuccessPage() {
     <p>Your registration is confirmed.</p>
 
     {/* TAG DESIGN */}
-    <div
-      ref={tagRef}
+<div
+  ref={tagRef}
+  style={{
+    width: 600,
+    height: 900,
+    margin: "20px auto",
+    position: "relative",
+    fontFamily: "Arial, sans-serif",
+    backgroundImage: `url(${bgImage})`, // 🔥 Put your fire background image in public folder
+    backgroundSize: "cover",
+    backgroundPosition: "center",
+    color: "#000",
+    overflow: "hidden",
+  }}
+>
+  {/* White inner paper effect */}
+  <div
+    style={{
+      width: "90%",
+      height: "85%",
+      margin: "40px auto",
+      borderRadius: 20,
+      padding: 30,
+      textAlign: "center",
+      position: "relative",
+    }}
+  >
+    {/* TOP LOGO + THEME */}
+    {/*<div style={{ display: "flex", justifyContent: "space-between" }}>
+      <img src={logo} alt="DYO Logo" style={{ width: 120 }} />
+
+      <div
+        style={{
+          background: "red",
+          color: "#fff",
+          padding: "8px 15px",
+          borderRadius: 20,
+          fontWeight: "bold",
+          fontSize: 14,
+        }}
+      >
+        Theme: The Believer’s IDENTITY
+      </div>
+    </div>
+
+    {/* TITLE */}
+    {/*<h2 style={{ marginTop: 20, fontWeight: 600 }}>
+      I will be attending
+    </h2>
+
+    {/*<h1
       style={{
-        width: 320,
-        margin: "10px auto",
-        padding: 5,
-        background: "#fff",
-        borderRadius: 12,
-        border: "4px solid #000",
-        textAlign: "center",
-        fontFamily: "Arial, sans-serif"
+        fontSize: 60,
+        margin: 0,
+        color: "#0d47a1",
+        fontWeight: 900,
+        letterSpacing: 2,
       }}
     >
-      <img src={logo} alt="Logo" style={{ width: 70 }} />
+      IGNITION ’26
+    </h1>
 
-      <h1 style={{ fontSize: 26, margin: "5px 0", fontWeight: 900 }}>
-        I AM ATTENDING
-      </h1>
+    {/*<p style={{ marginTop: 5, fontWeight: 600 }}>
+      (WORD & PRAYER CONFERENCE)
+    </p>*/}
 
-      <h1 style={{ fontSize: 28, color: "red", margin: 0 }}>
-        IGNITION 26
-      </h1>
-
+    {/* PHOTO FRAME */}
+    <div
+      style={{
+        width: 350,
+        height: 300,
+        marginRight: "1px",
+        marginLeft: "1px",
+        margin: "270px auto 0",
+        border: "5px solid #000",
+        borderRadius: 30,
+        overflow: "hidden",
+        background: "#eee",
+      }}
+    >
       <img
         src={user.photo_url}
         crossOrigin="anonymous"
         alt="Participant"
         style={{
-          width: 180,
-          height: 180,
+          width: "100%",
+          height: "100%",
           objectFit: "cover",
-          marginTop: 15,
-          border: "2px solid #000"
-        }}
-      />
-
-      <h2 style={{ marginTop: 15, fontWeight: "bold" }}>
-        {user.full_name}
-      </h2>
-
-      <p style={{ color: "red", marginBottom: 5 }}>
-        THEME:
-      </p>
-
-      <p style={{ fontWeight: "bold", margin: 0 }}>
-        THE BELIEVER'S IDENTITY
-      </p>
-
-      <div
-        style={{
-          marginTop: 15,
-          height: 40,
-          background:
-            "repeating-linear-gradient(90deg,#000 0px,#000 2px,#fff 2px,#fff 4px)"
         }}
       />
     </div>
 
+    {/* BLUE NAME BAR */}
+    <div
+      style={{
+        background: "#0b1979",
+        color: "#fff",
+        padding: "2px 2px",
+       
+        fontSize: 20,
+        fontWeight: "bold",
+      }}
+    >
+      {user.full_name}<br />
+      {user.archdeaconry} Archdeaconry
+    </div>
+  </div>
+
+  {/* BOTTOM EVENT INFO */}
+  <div
+    style={{
+      position: "absolute",
+      bottom: 0,
+      width: "100%",
+      background: "#fff",
+      padding: 20,
+      textAlign: "center",
+    }}
+  >
+    <h2 style={{ margin: 0 }}>
+      FRIDAY 17TH APRIL, 2026
+    </h2>
+
+    <div
+      style={{
+        background: "red",
+        color: "#fff",
+        display: "inline-block",
+        padding: "8px 20px",
+        marginTop: 10,
+        fontWeight: "bold",
+        fontSize: 22,
+      }}
+    >
+      6pm - 6am
+    </div>
+
+    <p style={{ marginTop: 10, fontSize: 24 }}>
+      Venue: St. Paul’s Anglican Church, Yemetu, Ibadan
+    </p>
+  </div>
+</div>
     <button
       onClick={handleDownload}
       disabled={downloading}
@@ -173,7 +257,7 @@ export default function SuccessPage() {
         marginTop: 10
       }}
     >
-      {downloading ? "Generating..." : "Download Convention Tag"}
+      {downloading ? "Downloaded..." : "Download Convention Tag"}
     </button>
   </div>
 );}
