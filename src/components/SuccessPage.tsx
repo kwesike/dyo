@@ -101,146 +101,121 @@ export default function SuccessPage() {
     <p>Your registration is confirmed.</p>
 
     {/* TAG DESIGN */}
+    
 <div
-  ref={tagRef}
   style={{
-    width: 600,
-    height: 900,
+    width: "100%",
+    maxWidth: 420,
     margin: "20px auto",
-    position: "relative",
-    fontFamily: "Arial, sans-serif",
-    backgroundImage: `url(${bgImage})`, // 🔥 Put your fire background image in public folder
-    backgroundSize: "cover",
-    backgroundPosition: "center",
-    color: "#000",
-    overflow: "hidden",
   }}
 >
-  {/* White inner paper effect */}
   <div
+    ref={tagRef}
     style={{
-      width: "90%",
-      height: "85%",
-      margin: "40px auto",
-      borderRadius: 20,
-      padding: 30,
-      textAlign: "center",
+      width: "100%",
+      aspectRatio: "2 / 3",
       position: "relative",
+      fontFamily: "Arial, sans-serif",
+      backgroundImage: `url(${bgImage})`,
+      backgroundSize: "cover",
+      backgroundPosition: "center",
+      overflow: "hidden",
+      borderRadius: 12,
     }}
+
+    
   >
-    {/* TOP LOGO + THEME */}
-    {/*<div style={{ display: "flex", justifyContent: "space-between" }}>
-      <img src={logo} alt="DYO Logo" style={{ width: 120 }} />
+    {/* CENTER CONTENT */}
+    <div
+      style={{
+        position: "absolute",
+        top: "58%",
+        left: "61.4%",
+        transform: "translate(-50%, -50%)",
+        width: "80%",
+        textAlign: "center",
+      }}
+    >
+      {/* PHOTO FRAME */}
+      <div
+        style={{
+          width: "70%",
+          aspectRatio: "1 / 1",
+          border: "4px solid black",
+          borderRadius: 20,
+          overflow: "hidden",
+          background: "#eee",
+        }}
+      >
+        <img
+          src={user.photo_url}
+          crossOrigin="anonymous"
+          alt="Participant"
+          style={{
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+          }}
+        />
+      </div>
+{/* NAME BAR */}
+      <div
+        style={{
+         position: "absolute",
+    top: "95%",
+    left: "35%",
+    transform: "translate(-50%, -50%)", // 👈 THIS centers it perfectly
+    width: "100%",                       // optional, so it's not full width
+    background: "#0b1979",
+    color: "#fff",
+    padding: "8px",
+    fontSize: 16,
+    fontWeight: "bold",
+    textAlign: "center",
+    zIndex: 20,
+           
+        }}
+      >
+        {user.full_name}
+        <br />
+        {user.archdeaconry} Archdeaconry
+      </div>
+
+    </div>
+    
+    {/* BOTTOM INFO */}
+    <div
+      style={{
+        position: "absolute",
+        bottom: 0,
+        width: "100%",
+        background: "#fff",
+        textAlign: "center",
+        padding: 5,
+      }}
+    >
+      <h3 style={{ margin: 0, fontSize: 16 }}>
+        FRIDAY 17TH APRIL, 2026
+      </h3>
 
       <div
         style={{
           background: "red",
           color: "#fff",
-          padding: "8px 15px",
-          borderRadius: 20,
+          display: "inline-block",
+          padding: "6px 14px",
+          marginTop: 6,
           fontWeight: "bold",
           fontSize: 14,
         }}
       >
-        Theme: The Believer’s IDENTITY
+        6pm - 6am
       </div>
+
+      <p style={{ marginTop: 6, fontSize: 13 }}>
+        St. Paul’s Anglican Church, Yemetu, Ibadan
+      </p>
     </div>
-
-    {/* TITLE */}
-    {/*<h2 style={{ marginTop: 20, fontWeight: 600 }}>
-      I will be attending
-    </h2>
-
-    {/*<h1
-      style={{
-        fontSize: 60,
-        margin: 0,
-        color: "#0d47a1",
-        fontWeight: 900,
-        letterSpacing: 2,
-      }}
-    >
-      IGNITION ’26
-    </h1>
-
-    {/*<p style={{ marginTop: 5, fontWeight: 600 }}>
-      (WORD & PRAYER CONFERENCE)
-    </p>*/}
-
-    {/* PHOTO FRAME */}
-    <div
-      style={{
-        width: 350,
-        height: 350,
-        marginRight: "1px",
-        marginLeft: "1px",
-        margin: "270px auto 0",
-        border: "5px solid #000",
-        borderRadius: 30,
-        overflow: "hidden",
-        background: "#eee",
-      }}
-    >
-      <img
-        src={user.photo_url}
-        crossOrigin="anonymous"
-        alt="Participant"
-        style={{
-          width: "100%",
-          height: "100%",
-          objectFit: "cover",
-        }}
-      />
-    </div>
-
-    {/* BLUE NAME BAR */}
-    <div
-      style={{
-        background: "#0b1979",
-        color: "#fff",
-        padding: "2px 2px",
-       
-        fontSize: 20,
-        fontWeight: "bold",
-      }}
-    >
-      {user.full_name}<br />
-      {user.archdeaconry} Archdeaconry
-    </div>
-  </div>
-
-  {/* BOTTOM EVENT INFO */}
-  <div
-    style={{
-      position: "absolute",
-      bottom: 0,
-      width: "100%",
-      background: "#fff",
-      padding: 3,
-      textAlign: "center",
-    }}
-  >
-    <h2 style={{ margin: 0 }}>
-      FRIDAY 17TH APRIL, 2026
-    </h2>
-
-    <div
-      style={{
-        background: "red",
-        color: "#fff",
-        display: "inline-block",
-        padding: "8px 20px",
-        marginTop: 2,
-        fontWeight: "bold",
-        fontSize: 20,
-      }}
-    >
-      6pm - 6am
-    </div>
-
-    <p style={{ marginTop: 2, fontSize: 20 }}>
-      Venue: St. Paul’s Anglican Church, Yemetu, Ibadan
-    </p>
   </div>
 </div>
     <button
