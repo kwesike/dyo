@@ -169,7 +169,7 @@ export default function SuccessPage() {
     background: "#0b1979",
     color: "#fff",
     padding: "8px",
-    fontSize: 16,
+    fontSize: 13,
     fontWeight: "bold",
     textAlign: "center",
     zIndex: 20,
