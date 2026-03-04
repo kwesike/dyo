@@ -171,7 +171,7 @@ export default function SuccessPage() {
     <div
       style={{
         width: 350,
-        height: 300,
+        height: 350,
         marginRight: "1px",
         marginLeft: "1px",
         margin: "270px auto 0",
@@ -216,7 +216,7 @@ export default function SuccessPage() {
       bottom: 0,
       width: "100%",
       background: "#fff",
-      padding: 20,
+      padding: 3,
       textAlign: "center",
     }}
   >
@@ -230,15 +230,15 @@ export default function SuccessPage() {
         color: "#fff",
         display: "inline-block",
         padding: "8px 20px",
-        marginTop: 10,
+        marginTop: 2,
         fontWeight: "bold",
-        fontSize: 22,
+        fontSize: 20,
       }}
     >
       6pm - 6am
     </div>
 
-    <p style={{ marginTop: 10, fontSize: 24 }}>
+    <p style={{ marginTop: 2, fontSize: 20 }}>
       Venue: St. Paul’s Anglican Church, Yemetu, Ibadan
     </p>
   </div>
@@ -257,7 +257,7 @@ export default function SuccessPage() {
         marginTop: 10
       }}
     >
-      {downloading ? "Downloaded..." : "Download Convention Tag"}
+      {downloading ? "Downloaded" : "Download Convention Tag"}
     </button>
   </div>
 );}
