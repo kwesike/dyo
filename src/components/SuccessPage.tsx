@@ -192,6 +192,7 @@ export default function SuccessPage() {
         background: "#fff",
         textAlign: "center",
         padding: 1,
+        color:"red",
       }}
     >
       <h3 style={{ margin: 0, fontSize: 14 }}>
@@ -212,7 +213,7 @@ export default function SuccessPage() {
         6pm - 6am
       </div>
 
-      <p style={{ marginTop: 3, fontSize: 13 }}>
+      <p style={{ marginTop: 3, fontSize: 13, color:"red" }}>
         St. Paul’s Anglican Church, Yemetu, Ibadan
       </p>
     </div>
