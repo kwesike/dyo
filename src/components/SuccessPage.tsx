@@ -129,8 +129,8 @@ export default function SuccessPage() {
     <div
       style={{
         position: "absolute",
-        top: "38%",
-        left: "101.4%",
+        top: "39.7%",
+        left: "85.4%",
         transform: "translate(-50%, -50%)",
         width: "70%",
         textAlign: "center",
@@ -141,7 +141,7 @@ export default function SuccessPage() {
         style={{
           width: "70%",
           aspectRatio: "1 / 1",
-          border: "4px solid black",
+          border: "4px solid pink",
           borderRadius: 20,
           overflow: "hidden",
           background: "#eee",
@@ -162,22 +162,26 @@ export default function SuccessPage() {
       <div
         style={{
          position: "absolute",
-    top: "90%",
+    top: "118%",
     left: "35%",
     transform: "translate(-50%, -50%)", // 👈 THIS centers it perfectly
-    width: "100%",                       // optional, so it's not full width
-    background: "#0b1979",
-    color: "#fff",
+    width: "70%",                       // optional, so it's not full width
+    background: "#f16395",
+    color: "#580d64",
     padding: "8px",
-    fontSize: 13,
+    fontSize: 11,
     fontWeight: "bold",
     textAlign: "center",
     zIndex: 20,
+    border: "4px solid pink",
+    borderRadius: 20,
            
         }}
       >
         {user.full_name}
-        <br />
+        <br /><hr/>
+        {user.church}
+        <br /><hr/>
         {user.archdeaconry} Archdeaconry
       </div>
 
@@ -192,7 +196,7 @@ export default function SuccessPage() {
         background: "#fff",
         textAlign: "center",
         padding: 1,
-        color:"red",
+        color:"#580d64",
       }}
     >
       <h3 style={{ margin: 0, fontSize: 14 }}>
@@ -201,7 +205,7 @@ export default function SuccessPage() {
 
       <div
         style={{
-          background: "red",
+          background: "#580d64",
           color: "#fff",
           display: "inline-block",
           padding: "6px 14px",
@@ -213,7 +217,7 @@ export default function SuccessPage() {
         10am
       </div>
 
-      <p style={{ marginTop: 3, fontSize: 13, color:"red" }}>
+      <p style={{ marginTop: 3, fontSize: 13, color:"#580d64" }}>
         VMAC Olorunsogo, Ibadan
       </p>
     </div>
