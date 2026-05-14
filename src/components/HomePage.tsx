@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import "./HomePage.css";
-import logo from "../assets/ibadan_north.png";
+import logo from "../assets/LOGO.jpeg";
 import pic1 from "../assets/pic11.jpg";
 import pic2 from "../assets/pic111.jpg";
 import pic3 from "../assets/pic1.jpg";
