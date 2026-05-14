@@ -194,7 +194,7 @@ export default function RegistrationForm() {
       {/* Registration Form */}
       <main className="form-section">
         <div className="form-box">
-          <h2>Diocesan Youth Convention Registration</h2>
+          <h2> Registration</h2>
           <form onSubmit={handleSubmit}>
             <input name="full_name" placeholder="Full Name" value={formData.full_name} onChange={handleChange} required />
             <select name="gender" value={formData.gender} onChange={handleChange} required>
