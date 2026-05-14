@@ -129,10 +129,10 @@ export default function SuccessPage() {
     <div
       style={{
         position: "absolute",
-        top: "58%",
-        left: "61.4%",
+        top: "38%",
+        left: "101.4%",
         transform: "translate(-50%, -50%)",
-        width: "80%",
+        width: "70%",
         textAlign: "center",
       }}
     >
@@ -196,7 +196,7 @@ export default function SuccessPage() {
       }}
     >
       <h3 style={{ margin: 0, fontSize: 14 }}>
-        FRIDAY 17TH APRIL, 2026
+        FRIDAY 12TH JUNE, 2026
       </h3>
 
       <div
@@ -210,11 +210,11 @@ export default function SuccessPage() {
           fontSize: 14,
         }}
       >
-        6pm - 6am
+        10am
       </div>
 
       <p style={{ marginTop: 3, fontSize: 13, color:"red" }}>
-        St. Paul’s Anglican Church, Yemetu, Ibadan
+        VMAC Olorunsogo, Ibadan
       </p>
     </div>
   </div>
