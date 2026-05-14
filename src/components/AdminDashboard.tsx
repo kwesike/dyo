@@ -220,7 +220,7 @@ export default function AdminDashboard() {
       : "bg-gray-200"
   }`}
 >
-  Ignition Attendance
+  Family Weekend Attendance
 </button>
       </div>
 

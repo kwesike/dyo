@@ -3,7 +3,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import html2canvas from "html2canvas";
 import { supabase } from "../lib/supabaseClient";
 import logo from "../assets/LOGO.jpeg";
-import bgImage from "../assets/ignition-bg.jpeg";
+import bgImage from "../assets/Attend.png";
 
 export default function SuccessPage() {
   const { id } = useParams();
