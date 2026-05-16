@@ -169,11 +169,11 @@ export default function SuccessPage() {
     background: "#f16395",
     color: "#580d64",
     padding: "8px",
-    fontSize: 11,
+    fontSize: 9,
     fontWeight: "bold",
     textAlign: "center",
     zIndex: 20,
-    border: "4px solid pink",
+    border: "1px solid pink",
     borderRadius: 20,
            
         }}
@@ -199,7 +199,7 @@ export default function SuccessPage() {
         color:"#580d64",
       }}
     >
-      <h3 style={{ margin: 0, fontSize: 14 }}>
+      <h3 style={{ margin: 0, fontSize: 12 }}>
         FRIDAY 12TH JUNE, 2026
       </h3>
 
@@ -208,16 +208,16 @@ export default function SuccessPage() {
           background: "#580d64",
           color: "#fff",
           display: "inline-block",
-          padding: "6px 14px",
-          marginTop: 2,
+          padding: "2px 8px",
+          marginTop: 1,
           fontWeight: "bold",
-          fontSize: 14,
+          fontSize: 12,
         }}
       >
         10am
       </div>
 
-      <p style={{ marginTop: 3, fontSize: 13, color:"#580d64" }}>
+      <p style={{ marginTop: 0, fontSize: 12, color:"#580d64" }}>
         VMAC Olorunsogo, Ibadan
       </p>
     </div>
