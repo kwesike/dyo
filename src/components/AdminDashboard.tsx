@@ -144,27 +144,29 @@ export default function AdminDashboard() {
   /* ================= EXPORT ================= */
 
   const exportToExcel = () => {
-    const data =
-      activeTab === "youth" ? filteredYouth : filteredMissionVoluteers;
+  let data: any[];
+  let sheetName: string;
+  let fileName: string;
 
-    const ws = XLSX.utils.json_to_sheet(data);
-    const wb = XLSX.utils.book_new();
+  if (activeTab === "youth") {
+    data = filteredYouth;
+    sheetName = "Youth Registrations";
+    fileName = "Youth_Convention_Registrations.xlsx";
+  } else if (activeTab === "mission volunteers") {
+    data = filteredMissionVoluteers;
+    sheetName = "Mission Volunteers";
+    fileName = "Mission_Volunteers.xlsx";
+  } else {
+    data = filteredIgnition;
+    sheetName = "Family Weekend Attendance";
+    fileName = "Family_Weekend_Attendance.xlsx";
+  }
 
-    XLSX.utils.book_append_sheet(
-      wb,
-      ws,
-      activeTab === "youth"
-        ? "Youth Registrations"
-      : "Mission Voluteers"
-    );
-
-    XLSX.writeFile(
-      wb,
-      activeTab === "youth"
-        ? "Youth_Convention_Registrations.xlsx"
-    : "Mission_Voluteersxlsx"
-    );
-  };
+  const ws = XLSX.utils.json_to_sheet(data);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, sheetName);
+  XLSX.writeFile(wb, fileName);
+};
 
   /* ================= LOGOUT ================= */
 
@@ -296,8 +298,8 @@ export default function AdminDashboard() {
             </tbody>
           </table>
         </div>
-      ) : (
-        /* ===== MISSION VOLUTEERS TABLE ===== */
+      ) : activeTab === "mission volunteers" ? (
+  /* ===== MISSION VOLUTEERS TABLE ===== */
         <div className="overflow-x-auto">
           <table className="w-full border text-sm">
             <thead>
@@ -324,7 +326,7 @@ export default function AdminDashboard() {
             </tbody>
           </table>
         </div>
-        )} : {(
+        ) : (
 
   /* ===== IGNITION TABLE ===== */
 
