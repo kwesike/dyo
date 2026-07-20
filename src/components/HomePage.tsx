@@ -49,11 +49,11 @@ const HomePage: React.FC = () => {
         className="popup-image"
       />
 
-      <Link to="/register">
-        <button className="attend-btn">
+      {/*<Link to="/register">*/}
+        {/*</div></div><button className="attend-btn">
           Click to Attend
-        </button>
-      </Link>
+        </button>*/}
+      {/*</Link>*/}
 
     </div>
   </div>
