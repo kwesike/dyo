@@ -10,7 +10,7 @@ import pic5 from "../assets/pic11111.jpg";
 import bishop from "../assets/bishop.jpg";
 import chap from "../assets/chap.jpg";
 import achap from "../assets/achap.jpg";
-import popupImage from "../assets/DYO FAMILY WEEKEND.jpg.jpeg"; // add your image here
+import popupImage from "../assets/praise and drama11.jpeg"; // add your image here
 import CountdownTimer from "../components/CountdownTimer";
 
 
