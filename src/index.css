@@ -1,68 +1,99 @@
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+/* ============================================================
+   Global base — import this FIRST in main.tsx, before any
+   component CSS:   import "./index.css";
+   ============================================================ */
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+/* Tailwind v4. This line MUST stay at the very top of the file —
+   CSS @import rules are only valid before any other rule, so if it
+   sits lower down the browser silently drops it.
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+   Your admin pages (AdminDashboard, AdminTags, AdminProgrammes,
+   AdminProducts, AdminOrders, AdminAnnouncements, AccountPage) are
+   written entirely in Tailwind classes. Without this they have no
+   layout at all — they don't degrade gracefully, they just stack. */
+@import "tailwindcss";
+
+*,
+*::before,
+*::after { box-sizing: border-box; }
+
+html {
+  -webkit-text-size-adjust: 100%;   /* stops iOS inflating text in landscape */
 }
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
-body {
+html, body, #root {
   margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+  padding: 0;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+img, video, svg, canvas { max-width: 100%; height: auto; }
+
+/* ------------------------------------------------------------
+   The 100vw trap
+
+   Several of the existing stylesheets use `width: 100vw` on page
+   containers, and HomePage.css has `width: 100%vw`, which is not
+   valid CSS and is dropped entirely.
+
+   `100vw` includes the vertical scrollbar. On any desktop browser
+   that reserves scrollbar space, `width: 100vw` is 15-17px wider
+   than the visible area, so every page scrolls sideways and the
+   layout looks broken at exactly the moment you resize to check
+   whether it's responsive.
+
+   Use `width: 100%`. These overrides neutralise the existing rules
+   without editing four files; delete them once those are cleaned up.
+------------------------------------------------------------ */
+
+.home-container,
+.registration-container,
+.payment-container,
+.donation-container,
+.carousel {
+  width: 100% !important;
+  max-width: 100%;
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
+/* ------------------------------------------------------------
+   Tap targets and inputs
+------------------------------------------------------------ */
+
+button, input, select, textarea { font-family: inherit; font-size: inherit; }
+
+/* iOS zooms the page whenever a focused input is under 16px. */
+@media (max-width: 640px) {
+  input, select, textarea { font-size: 16px; }
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
+/* Anything interactive should be comfortably thumb-sized. */
+button, a[role="button"], .pg-button, .product-add, .home-btn {
+  min-height: 44px;
+}
+
+/* Long words and URLs shouldn't force a page wider than the screen. */
+h1, h2, h3, p, li, td { overflow-wrap: break-word; }
+
+/* Tables are the usual cause of sideways scroll on admin screens.
+   Wrap them in <div className="table-scroll"> so only the table moves. */
+.table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+:where(a, button, input, select, textarea):focus-visible {
+  outline: 2px solid #ffd700;
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

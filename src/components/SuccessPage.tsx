@@ -1,243 +1,278 @@
-import { useEffect, useState, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import html2canvas from "html2canvas";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { Link, useParams } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
-import logo from "../assets/LOGO.jpeg";
-import bgImage from "../assets/Attend.png";
+import { useAuth } from "./Authcontext";
+import { naira } from "../lib/Payments";
+import {
+  composeAttendingCard, uploadAttendingCard, shareCard, DEFAULT_CARD_CONFIG,
+} from "../lib/Attendingcard";
+import Navbar from "./Navbar";
+import "./Programmes.css";
 
-export default function SuccessPage() {
-  const { id } = useParams();
-  const tagRef = useRef<HTMLDivElement>(null);
-  const navigate = useNavigate();
-  const [user, setUser] = useState<any>(null);
-  const [downloading, setDownloading] = useState(false);
+/**
+ * Confirmation page after a programme registration payment.
+ *
+ * THIS PAGE NEVER WRITES PAYMENT STATUS. The old version's pattern — land on
+ * the page, assume success, update the row — is exactly the hole the
+ * verify-payment function exists to close. Anyone can navigate straight to
+ * /success/<some-id> by typing it in the address bar. If arriving here were
+ * enough to mark a registration paid, the entire payment flow would be
+ * decorative.
+ *
+ * All this does is READ the row and report what the server already decided.
+ */
 
-  useEffect(() => {
-    if (!id) return;
-
-    const loadData = async () => {
-      const { data } = await supabase
-        .from("ignition_attendance")
-        .select("*")
-        .eq("id", id)
-        .single();
-
-      setUser(data);
-    };
-
-    loadData();
-  }, [id]);
-
-  const handleDownload = async () => {
-  if (!tagRef.current || !user) return;
-
-  setDownloading(true);
-
-  // 1️⃣ Generate image
-  const canvas = await html2canvas(tagRef.current, {
-    scale: 4,
-    useCORS: true,
-    backgroundColor: null,
-  });
-
-  const imgData = canvas.toDataURL("image/png");
-
-  // 2️⃣ Download for user
-  const link = document.createElement("a");
-  link.href = imgData;
-  link.download = `${user.full_name}_Convention_Tag.png`;
-  link.click();
-
-  // 3️⃣ Convert base64 → Blob
-  const res = await fetch(imgData);
-  const blob = await res.blob();
-
-  // 4️⃣ UPLOAD ADMIN TAG (IMPORTANT)
-  const adminFileName = `admin_tags/${user.archdeaconry}/${user.full_name
-    .replace(/\s+/g, "_")}_${user.id}.png`;
-
-  const { error: adminUploadError } = await supabase.storage
-    .from("tags")
-    .upload(adminFileName, blob, {
-      contentType: "image/png",
-      upsert: true,
-    });
-
-  if (adminUploadError) {
-    console.error("Admin tag upload failed:", adminUploadError);
-  }
-
-  // 5️⃣ SAVE ADMIN TAG URL TO DB (OPTIONAL BUT GOOD)
-  const { data: publicData } = supabase.storage
-    .from("tags")
-    .getPublicUrl(adminFileName);
-
-  await supabase
-    .from("ignition_attendance")
-    .update({ tag_url: publicData.publicUrl })
-    .eq("id", user.id);
-
-  // 6️⃣ Redirect home
-  setTimeout(() => navigate("/"), 1200);
-
-  setDownloading(false);
+type Row = {
+  id: string;
+  full_name: string;
+  payment_status: string;
+  amount_naira?: number;
+  attending_card_url?: string | null;
+  photo_url?: string | null;
+  programmes?: {
+    title: string;
+    slug: string;
+    starts_at: string | null;
+    venue: string | null;
+    attending_template_url: string | null;
+    card_config?: unknown;
+  } | null;
 };
 
+const POLL_INTERVAL_MS = 4000;
+const POLL_TIMEOUT_MS = 90_000;
 
+export default function SuccessPage() {
+  const { id } = useParams<{ id: string }>();
+  const { profile } = useAuth();
 
-  if (!user) {
-    return (
-      <div style={{ padding: 40, textAlign: "center" }}>
-        Loading...
-      </div>
+  const [row, setRow] = useState<Row | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [legacy, setLegacy] = useState(false);
+  const [waitedOut, setWaitedOut] = useState(false);
+
+  const [cardUrl, setCardUrl] = useState<string | null>(null);
+  const [cardBlob, setCardBlob] = useState<Blob | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [notice, setNotice] = useState("");
+
+  const startedAt = useRef(Date.now());
+
+  const load = useCallback(async () => {
+    // New table first.
+    const { data } = await supabase
+      .from("programme_registrations")
+      .select(`
+        id, full_name, payment_status, amount_naira, attending_card_url, photo_url,
+        programmes ( title, slug, starts_at, venue, attending_template_url, card_config )
+      `)
+      .eq("id", id)
+      .maybeSingle();
+
+    if (data) {
+      setRow(data as unknown as Row);
+      if (data.attending_card_url) setCardUrl(data.attending_card_url);
+      setLoading(false);
+      return data.payment_status;
+    }
+
+    // Fall back to the original convention table so links issued before the
+    // restructure still resolve. Remove this once that data is migrated.
+    const { data: old } = await supabase
+      .from("registrations")
+      .select("id, full_name, payment_status, photo_url")
+      .eq("id", id)
+      .maybeSingle();
+
+    if (old) {
+      setLegacy(true);
+      setRow({
+        id: String(old.id),
+        full_name: old.full_name,
+        payment_status: old.payment_status ?? "pending",
+        photo_url: old.photo_url,
+      });
+    }
+
+    setLoading(false);
+    return old?.payment_status;
+  }, [id]);
+
+  useEffect(() => { void load(); }, [load]);
+
+  /**
+   * A payment can settle a moment after the browser returns — the webhook may
+   * land before or after the callback. Poll briefly rather than telling someone
+   * their payment failed when it is merely a few seconds behind.
+   */
+  useEffect(() => {
+    if (!row || isSettled(row.payment_status)) return;
+
+    const timer = setInterval(async () => {
+      if (Date.now() - startedAt.current > POLL_TIMEOUT_MS) {
+        setWaitedOut(true);
+        clearInterval(timer);
+        return;
+      }
+      const status = await load();
+      if (status && isSettled(status)) clearInterval(timer);
+    }, POLL_INTERVAL_MS);
+
+    return () => clearInterval(timer);
+  }, [row, load]);
+
+  async function makeCard() {
+    const programme = row?.programmes;
+    if (!programme?.attending_template_url) {
+      return setNotice("The attendance card for this programme isn't ready yet.");
+    }
+    const photo = row?.photo_url ?? profile?.photo_url;
+    if (!photo) {
+      return setNotice("Add a photo to your profile and the card can be generated.");
+    }
+
+    setBusy(true);
+    setNotice("");
+    try {
+      const blob = await composeAttendingCard({
+        templateUrl: programme.attending_template_url,
+        photoUrl: photo,
+        name: row!.full_name,
+        config: (programme.card_config as never) ?? DEFAULT_CARD_CONFIG,
+      });
+      const url = await uploadAttendingCard(blob, row!.id);
+      await supabase.from("programme_registrations")
+        .update({ attending_card_url: url }).eq("id", row!.id);
+
+      setCardBlob(blob);
+      setCardUrl(URL.createObjectURL(blob));
+    } catch {
+      setNotice("Couldn't build the card. Try a different profile photo.");
+    }
+    setBusy(false);
+  }
+
+  async function share() {
+    let blob = cardBlob;
+    if (!blob && cardUrl) blob = await (await fetch(cardUrl)).blob();
+    if (!blob || !row) return;
+    await shareCard(
+      blob,
+      `${row.programmes?.slug ?? "programme"}-attending.png`,
+      `I will be attending ${row.programmes?.title ?? "this programme"}!`,
     );
   }
 
+  if (loading) return <><Navbar /><p className="pg-status">Loading…</p></>;
+
+  if (!row) {
+    return (
+      <>
+        <Navbar />
+        <div className="pg-status">
+          <h2>We can't find that registration</h2>
+          <p>
+            If you were debited, send your transaction reference to the youth
+            office and it will be sorted out.
+          </p>
+          <Link to="/programmes">See all programmes</Link>
+        </div>
+      </>
+    );
+  }
+
+  const paid = row.payment_status === "paid" || row.payment_status === "not_required";
+  const pending = !paid && !waitedOut;
+
   return (
-  <div style={{ padding: 30, textAlign: "center", width: "100vw" }}>
-    <h1 style={{ color: "green", marginBottom: 10 }}>
-      🎉 Registration Successful!
-    </h1>
-    <p>Your registration is confirmed.</p>
+    <div className="pg-detail">
+      <Navbar />
 
-    {/* TAG DESIGN */}
-    
-<div
-  style={{
-    width: "100%",
-    maxWidth: 420,
-    margin: "20px auto",
-  }}
->
-  <div
-    ref={tagRef}
-    style={{
-      width: "100%",
-      aspectRatio: "2 / 3",
-      position: "relative",
-      fontFamily: "Arial, sans-serif",
-      backgroundImage: `url(${bgImage})`,
-      backgroundSize: "cover",
-      backgroundPosition: "center",
-      overflow: "hidden",
-      borderRadius: 12,
-    }}
+      <div className="pg-success">
+        <span className={`pg-pill pg-pill--${paid ? "open" : "opens_later"}`}>
+          {paid ? "Confirmed" : pending ? "Confirming payment…" : "Not confirmed yet"}
+        </span>
 
-    
-  >
-    {/* CENTER CONTENT */}
-    <div
-      style={{
-        position: "absolute",
-        top: "39.7%",
-        left: "85.4%",
-        transform: "translate(-50%, -50%)",
-        width: "70%",
-        textAlign: "center",
-      }}
-    >
-      {/* PHOTO FRAME */}
-      <div
-        style={{
-          width: "70%",
-          aspectRatio: "1 / 1",
-          border: "4px solid pink",
-          borderRadius: 20,
-          overflow: "hidden",
-          background: "#eee",
-        }}
-      >
-        <img
-          src={user.photo_url}
-          crossOrigin="anonymous"
-          alt="Participant"
-          style={{
-            width: "100%",
-            height: "100%",
-            objectFit: "cover",
-          }}
-        />
+        <h1>
+          {paid
+            ? `You're in, ${row.full_name.split(" ")[0]}`
+            : "Hold on a moment"}
+        </h1>
+
+        {row.programmes && (
+          <p className="pg-success-event">
+            <strong>{row.programmes.title}</strong>
+            {row.programmes.starts_at &&
+              ` · ${new Date(row.programmes.starts_at).toLocaleDateString("en-NG",
+                { weekday: "long", day: "numeric", month: "long", year: "numeric" })}`}
+            {row.programmes.venue && <><br />{row.programmes.venue}</>}
+          </p>
+        )}
+
+        {paid ? (
+          <>
+            <p className="pg-note">
+              Your reference is <strong>{row.id.slice(0, 8).toUpperCase()}</strong>.
+              Bring it with you — a screenshot is fine.
+            </p>
+
+            {row.programmes?.attending_template_url && (
+              <div className="pg-success-card">
+                <h3>Tell people you're coming</h3>
+                {cardUrl ? (
+                  <>
+                    <img className="pg-attending-card" src={cardUrl}
+                         alt="Your attendance card" />
+                    <button className="pg-button" onClick={share}>Share it</button>
+                  </>
+                ) : (
+                  <>
+                    <p className="pg-note">
+                      We'll put your photo into the "I will be attending" design.
+                    </p>
+                    <button className="pg-button" onClick={makeCard} disabled={busy}>
+                      {busy ? "Building…" : "Make my card"}
+                    </button>
+                  </>
+                )}
+              </div>
+            )}
+          </>
+        ) : pending ? (
+          <p className="pg-note">
+            Your payment is still clearing with the bank. This page updates itself —
+            you don't need to pay again or refresh.
+          </p>
+        ) : (
+          <p className="pg-note pg-note--warn">
+            We haven't had confirmation from the bank yet. If you were debited,
+            it usually lands within a few minutes and your place is held.
+            {row.amount_naira ? ` Amount: ${naira(row.amount_naira)}.` : ""} If
+            nothing changes in an hour, contact the youth office with your
+            transaction reference.
+          </p>
+        )}
+
+        {notice && <p className="pg-notice">{notice}</p>}
+
+        {legacy && (
+          <p className="pg-note">
+            This is a registration from before the site was updated.
+          </p>
+        )}
+
+        <div className="pg-success-actions">
+          <Link className="pg-button pg-button--quiet" to="/account">
+            My account
+          </Link>
+          <Link className="pg-button pg-button--quiet" to="/programmes">
+            Other programmes
+          </Link>
+        </div>
       </div>
-{/* NAME BAR */}
-      <div
-        style={{
-         position: "absolute",
-    top: "118%",
-    left: "35%",
-    transform: "translate(-50%, -50%)", // 👈 THIS centers it perfectly
-    width: "70%",                       // optional, so it's not full width
-    background: "#f16395",
-    color: "#580d64",
-    padding: "8px",
-    fontSize: 9,
-    fontWeight: "bold",
-    textAlign: "center",
-    zIndex: 20,
-    border: "1px solid pink",
-    borderRadius: 20,
-           
-        }}
-      >
-        {user.full_name}
-        <br /><hr/>
-        {user.church}
-        <br /><hr/>
-        {user.archdeaconry} Archdeaconry
-      </div>
-
     </div>
-    
-    {/* BOTTOM INFO */}
-    <div
-      style={{
-        position: "absolute",
-        bottom: 0,
-        width: "100%",
-        background: "#fff",
-        textAlign: "center",
-        padding: 1,
-        color:"#580d64",
-      }}
-    >
-      <h3 style={{ margin: 0, fontSize: 12 }}>
-        FRIDAY 12TH JUNE, 2026
-      </h3>
+  );
+}
 
-      <div
-        style={{
-          background: "#580d64",
-          color: "#fff",
-          display: "inline-block",
-          padding: "2px 8px",
-          marginTop: 1,
-          fontWeight: "bold",
-          fontSize: 12,
-        }}
-      >
-        10am
-      </div>
-
-      <p style={{ marginTop: 0, fontSize: 12, color:"#580d64" }}>
-        VMAC Olorunsogo, Ibadan
-      </p>
-    </div>
-  </div>
-</div>
-    <button
-      onClick={handleDownload}
-      disabled={downloading}
-      style={{
-        padding: "12px 25px",
-        background: "#ffd700",
-        border: "none",
-        color: "#800000",
-        borderRadius: 8,
-        fontWeight: "bold",
-        cursor: "pointer",
-        marginTop: 10
-      }}
-    >
-      {downloading ? "Downloaded" : "Download Convention Tag"}
-    </button>
-  </div>
-);}
+const isSettled = (status?: string) =>
+  status === "paid" || status === "not_required" || status === "refunded";

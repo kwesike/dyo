@@ -1,0 +1,404 @@
+@import url("https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&family=Inter:wght@400;500;600;700&display=swap");
+
+/* ============================================================
+   ADMIN CONSOLE
+   ------------------------------------------------------------
+   Designed as a parish register rather than a dashboard. The
+   people using this are the youth office — volunteers keeping
+   records, not analysts reading charts. So: ruled lines, a clear
+   hand, counts where counts are useful, and no decoration that
+   isn't carrying information.
+
+   One deliberate departure from the public site: the brand gold
+   #ffd700 is used only on the dark spine. On white it fails
+   contrast badly (about 1.4:1), so the workspace uses an aged
+   gold that keeps the character and can actually be read.
+   ============================================================ */
+
+.admin-shell {
+  --ink: #241a1a;
+  --muted: #6e625e;
+  --faint: #9a8d88;
+
+  --maroon: #800000;
+  --maroon-deep: #5c0000;
+  --spine: #300a0d;          /* sidebar — deeper than the brand maroon */
+
+  --gold: #ffd700;           /* dark backgrounds only */
+  --gold-aged: #a07b12;      /* light backgrounds — readable */
+
+  --paper: #fbf8f5;
+  --card: #ffffff;
+  --line: #e8ded7;
+  --line-strong: #d6c7bd;
+
+  --green: #1b6b34;
+  --amber: #8a6212;
+  --red: #a5231f;
+
+  --spine-w: 244px;
+
+  display: grid;
+  grid-template-columns: var(--spine-w) minmax(0, 1fr);
+  min-height: 100vh;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: Inter, system-ui, -apple-system, "Segoe UI", sans-serif;
+  font-size: 15px;
+}
+
+/* ------------------------------------------------------------
+   The spine
+------------------------------------------------------------ */
+
+.admin-spine {
+  background: var(--spine);
+  color: rgba(255, 255, 255, 0.72);
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 0;
+  height: 100vh;
+  overflow-y: auto;
+}
+
+.admin-spine-head {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 20px 18px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+.admin-spine-head img {
+  width: 38px; height: 38px;
+  border-radius: 9px;
+  object-fit: cover;
+  flex-shrink: 0;
+}
+.admin-spine-head div { min-width: 0; }
+.admin-spine-title {
+  font-family: Newsreader, Georgia, serif;
+  font-size: 1.02rem;
+  font-weight: 600;
+  color: #fff;
+  line-height: 1.2;
+  margin: 0;
+}
+.admin-spine-sub {
+  font-size: 0.7rem;
+  letter-spacing: 0.13em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin: 3px 0 0;
+}
+
+.admin-nav { padding: 14px 10px; flex: 1; }
+
+.admin-nav-group {
+  font-size: 0.65rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.38);
+  padding: 16px 10px 7px;
+}
+.admin-nav-group:first-child { padding-top: 4px; }
+
+.admin-nav a {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 9px 11px;
+  border-radius: 8px;
+  color: rgba(255, 255, 255, 0.74);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  line-height: 1.3;
+}
+.admin-nav a:hover { background: rgba(255, 255, 255, 0.07); color: #fff; }
+
+.admin-nav a.active {
+  background: rgba(255, 255, 255, 0.11);
+  color: #fff;
+  /* the ledger rule — marks the line you're on */
+  box-shadow: inset 3px 0 0 var(--gold);
+}
+
+.admin-nav-icon { width: 17px; height: 17px; flex-shrink: 0; opacity: 0.85; }
+.admin-nav a.active .admin-nav-icon { opacity: 1; }
+.admin-nav-label { flex: 1; }
+
+/* Counts belong in a register. They only render when non-zero,
+   so a badge always means something needs attention. */
+.admin-nav-count {
+  font-size: 0.72rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  background: rgba(255, 255, 255, 0.14);
+  color: #fff;
+  border-radius: 999px;
+  padding: 2px 7px;
+  min-width: 21px;
+  text-align: center;
+}
+.admin-nav-count--alert { background: var(--gold); color: var(--spine); }
+
+.admin-spine-foot {
+  padding: 14px 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.82rem;
+}
+.admin-spine-foot a { color: var(--gold); text-decoration: none; display: block; }
+.admin-spine-foot p { margin: 0 0 6px; color: rgba(255, 255, 255, 0.55); }
+
+/* ------------------------------------------------------------
+   Workspace
+------------------------------------------------------------ */
+
+.admin-main { min-width: 0; display: flex; flex-direction: column; }
+
+.admin-topbar {
+  display: none;                 /* mobile only */
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--spine);
+  color: #fff;
+  position: sticky;
+  top: 0;
+  z-index: 60;
+}
+.admin-topbar button {
+  background: none;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: #fff;
+  width: 40px; height: 40px;
+  border-radius: 8px;
+  font-size: 1.05rem;
+  cursor: pointer;
+}
+.admin-topbar span { font-weight: 600; }
+
+.admin-body { padding: 30px 34px 70px; max-width: 1180px; width: 100%; }
+
+/* ------------------------------------------------------------
+   Page furniture — used by the admin pages
+------------------------------------------------------------ */
+
+.a-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 16px;
+  padding-bottom: 16px;
+  margin-bottom: 26px;
+  border-bottom: 2px solid var(--ink);
+}
+.a-head h1 {
+  font-family: Newsreader, Georgia, serif;
+  font-size: 1.95rem;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+.a-head p { margin: 5px 0 0; color: var(--muted); font-size: 0.92rem; max-width: 56ch; }
+
+.a-eyebrow {
+  font-size: 0.68rem;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--gold-aged);
+  font-weight: 600;
+  margin: 0 0 5px;
+}
+
+.a-card {
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 22px;
+}
+.a-card + .a-card { margin-top: 16px; }
+
+.a-section-title {
+  font-family: Newsreader, Georgia, serif;
+  font-size: 1.15rem;
+  font-weight: 600;
+  margin: 34px 0 14px;
+}
+
+/* Figures — tabular numerals so columns line up like a ledger */
+.a-figures {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1px;
+  background: var(--line);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+}
+.a-figure { background: var(--card); padding: 18px 20px; }
+.a-figure dt {
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  margin: 0 0 7px;
+}
+.a-figure dd {
+  margin: 0;
+  font-family: Newsreader, Georgia, serif;
+  font-size: 1.9rem;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+.a-figure small { display: block; margin-top: 6px; color: var(--faint); font-size: 0.8rem; }
+
+/* Buttons */
+.a-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 42px;
+  padding: 10px 20px;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  font: inherit;
+  font-weight: 600;
+  font-size: 0.92rem;
+  cursor: pointer;
+  text-decoration: none;
+  background: var(--maroon);
+  color: #fff;
+}
+.a-btn:hover { background: var(--maroon-deep); }
+.a-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.a-btn--quiet { background: var(--card); color: var(--ink); border-color: var(--line-strong); }
+.a-btn--quiet:hover { background: #f4eeea; }
+.a-btn--ghost { background: none; color: var(--maroon); border-color: transparent; padding: 8px 10px; }
+.a-btn--ghost:hover { background: #f4eeea; }
+
+/* Status pills */
+.a-pill {
+  display: inline-block;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 0.74rem;
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  white-space: nowrap;
+}
+.a-pill--live  { background: #e4f5e8; color: var(--green); }
+.a-pill--draft { background: #f0ecea; color: var(--muted); }
+.a-pill--warn  { background: #fdf4e1; color: var(--amber); }
+.a-pill--alert { background: #fdecec; color: var(--red); }
+
+/* Empty states are invitations, not apologies */
+.a-empty {
+  text-align: center;
+  padding: 52px 24px;
+  border: 1px dashed var(--line-strong);
+  border-radius: 12px;
+  background: var(--card);
+}
+.a-empty h3 { font-family: Newsreader, Georgia, serif; font-size: 1.2rem; margin: 0 0 6px; }
+.a-empty p { color: var(--muted); margin: 0 0 18px; }
+
+/* ------------------------------------------------------------
+   Tables — ruled like a register.
+   Scoped to .admin-body so the existing Tailwind-class pages
+   inherit this without each one needing a rewrite.
+------------------------------------------------------------ */
+
+.admin-body table {
+  width: 100%;
+  border-collapse: collapse;
+  background: var(--card);
+  font-size: 0.9rem;
+}
+.admin-body thead tr { background: #f6f0ec; }
+.admin-body th {
+  text-align: left;
+  font-size: 0.71rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--muted);
+  font-weight: 600;
+  padding: 11px 12px;
+  border: none;
+  border-bottom: 1px solid var(--line-strong);
+  white-space: nowrap;
+}
+.admin-body td {
+  padding: 11px 12px;
+  border: none;
+  border-bottom: 1px solid var(--line);
+  font-variant-numeric: tabular-nums;
+}
+.admin-body tbody tr:hover { background: #fdfaf8; }
+
+.table-scroll {
+  width: 100%;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+
+/* Form fields, likewise inherited by existing pages */
+.admin-body input:not([type="file"]):not([type="checkbox"]),
+.admin-body select,
+.admin-body textarea {
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font: inherit;
+  background: var(--card);
+  color: var(--ink);
+}
+.admin-body input:focus-visible,
+.admin-body select:focus-visible,
+.admin-body textarea:focus-visible {
+  outline: 2px solid var(--gold-aged);
+  outline-offset: 1px;
+  border-color: var(--gold-aged);
+}
+.admin-body label { font-size: 0.88rem; }
+
+/* ------------------------------------------------------------
+   Responsive — the spine becomes a drawer
+------------------------------------------------------------ */
+
+@media (max-width: 900px) {
+  .admin-shell { grid-template-columns: 1fr; }
+
+  .admin-topbar { display: flex; }
+
+  .admin-spine {
+    position: fixed;
+    inset: 0 auto 0 0;
+    width: 270px;
+    z-index: 80;
+    transform: translateX(-100%);
+    transition: transform 0.25s ease;
+  }
+  .admin-spine.is-open { transform: translateX(0); }
+
+  .admin-scrim {
+    position: fixed;
+    inset: 0;
+    background: rgba(20, 5, 5, 0.5);
+    z-index: 70;
+  }
+
+  .admin-body { padding: 22px 16px 60px; }
+  .a-head h1 { font-size: 1.5rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .admin-spine { transition: none; }
+}

@@ -1,11 +1,7 @@
 // ==========================================
 // FIX 1: Declare Flutterwave globally
 // ==========================================
-declare global {
-  interface Window {
-    FlutterwaveCheckout: any;
-  }
-}
+
 
 import { useEffect, useState } from "react";
 import { useParams, useNavigate, Link } from "react-router-dom";
