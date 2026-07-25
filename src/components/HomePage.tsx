@@ -329,7 +329,7 @@ export default function HomePage() {
 
         {excos.length > 0 && (
           <>
-            <h3 className="home-exco-heading">Executive committee</h3>
+            <h3 className="home-exco-heading">Diocesan Youth Executives </h3>
             <div className="home-exco-grid">
               {excos.map((m: any) => (
                 <figure key={m.id} className="home-exco-card" title={m.bio ?? undefined}>
