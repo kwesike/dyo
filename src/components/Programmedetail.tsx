@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { supabase } from "./../lib/supabaseClient";
+import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "./Authcontext";
-import { naira, startPayment } from "./../lib/Payments";
+import { naira, startPayment } from "../lib/Payments";
 import {
   composeAttendingCard, uploadAttendingCard, shareCard,
   DEFAULT_CARD_CONFIG,
-} from "./../lib/Attendingcard";
+} from "../lib/Attendingcard";
+import Navbar from "./Navbar";
+import SiteFooter from "./Sitefooter";
 import "./Programmes.css";
 
 interface ExtraField {
@@ -52,12 +54,18 @@ export default function ProgrammeDetail() {
     setLoading(false);
   }
 
-  if (loading || authLoading) return <p className="pg-status">Loading…</p>;
+  if (loading || authLoading) {
+    return <div className="pg-detail"><Navbar /><p className="pg-status">Loading…</p></div>;
+  }
   if (!programme) {
     return (
-      <div className="pg-status">
-        <h2>That programme isn't listed</h2>
-        <p>It may have been taken down. <Link to="/programmes">See what's on</Link>.</p>
+      <div className="pg-detail">
+        <Navbar />
+        <div className="pg-status">
+          <h2>That programme isn't listed</h2>
+          <p>It may have been taken down. <Link to="/programmes">See what's on</Link>.</p>
+        </div>
+        <SiteFooter />
       </div>
     );
   }
@@ -150,8 +158,12 @@ export default function ProgrammeDetail() {
       setNotice("The attendance card for this programme isn't ready yet.");
       return;
     }
-    if (!profile?.photo_url) {
-      setNotice("Add a photo to your profile first — that's what goes on the card.");
+
+    // The photo is the whole point of the card — say plainly what's missing
+    // and where to fix it, rather than failing quietly.
+    const photo = registration?.photo_url ?? profile?.photo_url;
+    if (!photo) {
+      setNotice("You haven't added a photo yet — add one in My account, then come back.");
       return;
     }
 
@@ -160,8 +172,12 @@ export default function ProgrammeDetail() {
     try {
       const blob = await composeAttendingCard({
         templateUrl: programme.attending_template_url,
-        photoUrl: profile.photo_url,
-        name: profile.full_name ?? "",
+        photoUrl: photo,
+        details: {
+          name: profile?.full_name ?? registration?.full_name ?? "",
+          church: registration?.church ?? profile?.church,
+          archdeaconry: registration?.archdeaconry ?? profile?.archdeaconry,
+        },
         config: programme.card_config ?? DEFAULT_CARD_CONFIG,
       });
 
@@ -171,8 +187,12 @@ export default function ProgrammeDetail() {
 
       setCardBlob(blob);
       setCardPreview(URL.createObjectURL(blob));
-    } catch {
-      setNotice("Couldn't build the card. Try a different profile photo.");
+    } catch (err) {
+      setNotice(
+        (err as Error)?.message?.toLowerCase().includes("load")
+          ? "Couldn't load your photo or the flyer. Both need to be uploaded and public before the card can build."
+          : "Couldn't build the card. Try a different profile photo.",
+      );
     }
     setBusy(false);
   }
@@ -192,6 +212,8 @@ export default function ProgrammeDetail() {
 
   return (
     <div className="pg-detail">
+      <Navbar />
+
       {programme.banner_url && (
         <div className="pg-hero" style={{ backgroundImage: `url(${programme.banner_url})` }}>
           <div className="pg-hero-inner">
@@ -209,6 +231,7 @@ export default function ProgrammeDetail() {
 
       <div className="pg-body">
         <article className="pg-about">
+          <Link to="/programmes" className="pg-back">← All programmes</Link>
           <p className="pg-meta">
             {programme.venue && <span>{programme.venue}</span>}
             <span>{programme.fee_naira > 0 ? naira(programme.fee_naira) : "Free"}</span>
@@ -221,7 +244,6 @@ export default function ProgrammeDetail() {
         </article>
 
         <aside className="pg-panel">
-          {/* --- not signed in --- */}
           {!session && (
             <>
               <h3>Register for this programme</h3>
@@ -240,7 +262,6 @@ export default function ProgrammeDetail() {
             </>
           )}
 
-          {/* --- signed in, not yet registered --- */}
           {session && !registration && (
             <>
               <h3>Register as {profile?.full_name}</h3>
@@ -280,7 +301,6 @@ export default function ProgrammeDetail() {
             </>
           )}
 
-          {/* --- registered --- */}
           {registration && (
             <>
               <h3>You're registered</h3>
@@ -327,6 +347,8 @@ export default function ProgrammeDetail() {
           {notice && <p className="pg-notice">{notice}</p>}
         </aside>
       </div>
+
+      <SiteFooter />
     </div>
   );
 }

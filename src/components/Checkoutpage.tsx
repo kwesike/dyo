@@ -1,10 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { supabase } from "./../lib/supabaseClient";
+import { supabase } from "../lib/supabaseClient";
 import { useCart } from "./Cartcontext";
 import { useAuth } from "./Authcontext";
-import { naira, startPayment } from "./../lib/Payments";
-import { ARCHDEACONRIES, DELIVERY_FEE_NAIRA, PICKUP_POINTS } from "./../lib/Constants";
+import { naira, startPayment } from "../lib/Payments";
+import { ARCHDEACONRIES, DELIVERY_FEE_NAIRA, PICKUP_POINTS } from "../lib/Constants";
+import Navbar from "./Navbar";
+import SiteFooter from "./Sitefooter";
 import "./Store.css";
 
 type Delivery = "pickup" | "ibadan" | "outside_ibadan";
@@ -22,7 +24,6 @@ export default function CheckoutPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
-  // Signed in? Then they shouldn't retype anything.
   useEffect(() => {
     if (!profile) return;
     setForm((f) => ({
@@ -43,10 +44,14 @@ export default function CheckoutPage() {
 
   if (lines.length === 0) {
     return (
-      <div className="store-status">
-        <h2>Your cart is empty</h2>
-        <p>Pick something out and it'll show up here.</p>
-        <Link className="product-add" to="/store">Go to the store</Link>
+      <div className="store">
+        <Navbar />
+        <div className="store-status">
+          <h2>Your cart is empty</h2>
+          <p>Pick something out and it'll show up here.</p>
+          <Link className="product-add" to="/store">Go to the store</Link>
+        </div>
+        <SiteFooter />
       </div>
     );
   }
@@ -123,101 +128,105 @@ export default function CheckoutPage() {
   }
 
   return (
-    <div className="checkout">
-      <h1>Checkout</h1>
+    <div className="store">
+      <Navbar />
 
-      <div className="checkout-layout">
-        {/* ---------- items ---------- */}
-        <section className="checkout-items">
-          <h2>Your items</h2>
-          {lines.map((l) => (
-            <div key={l.key} className="checkout-line">
-              {l.image && <img src={l.image} alt="" />}
-              <div className="checkout-line-body">
-                <p className="checkout-line-name">{l.name}</p>
-                {l.variant_label && <p className="checkout-line-variant">Size {l.variant_label}</p>}
-                <p className="checkout-line-price">{naira(l.unit_price_naira)}</p>
-              </div>
-              <div className="checkout-line-actions">
-                <div className="product-stepper">
-                  <button onClick={() => setQuantity(l.key, l.quantity - 1)}>−</button>
-                  <span>{l.quantity}</span>
-                  <button onClick={() => setQuantity(l.key, l.quantity + 1)}>+</button>
+      <div className="checkout">
+        <Link to="/store" className="checkout-back">← Keep shopping</Link>
+        <h1>Checkout</h1>
+
+        <div className="checkout-layout">
+          <section className="checkout-items">
+            <h2>Your items</h2>
+            {lines.map((l) => (
+              <div key={l.key} className="checkout-line">
+                {l.image && <img src={l.image} alt="" />}
+                <div className="checkout-line-body">
+                  <p className="checkout-line-name">{l.name}</p>
+                  {l.variant_label && <p className="checkout-line-variant">Size {l.variant_label}</p>}
+                  <p className="checkout-line-price">{naira(l.unit_price_naira)}</p>
                 </div>
-                <button className="linkish" onClick={() => remove(l.key)}>Remove</button>
+                <div className="checkout-line-actions">
+                  <div className="product-stepper">
+                    <button onClick={() => setQuantity(l.key, l.quantity - 1)}>−</button>
+                    <span>{l.quantity}</span>
+                    <button onClick={() => setQuantity(l.key, l.quantity + 1)}>+</button>
+                  </div>
+                  <button className="linkish" onClick={() => remove(l.key)}>Remove</button>
+                </div>
               </div>
-            </div>
-          ))}
-        </section>
-
-        {/* ---------- details ---------- */}
-        <section className="checkout-form">
-          {!session && (
-            <p className="checkout-tip">
-              <Link to={`/login?next=${encodeURIComponent("/cart")}`}>Sign in</Link> and
-              we'll fill this in for you — and keep your order history.
-            </p>
-          )}
-
-          <h2>Where it's going</h2>
-
-          <div className="checkout-choices">
-            {([
-              ["pickup", "Collect it", "Free"],
-              ["ibadan", "Deliver in Ibadan", naira(DELIVERY_FEE_NAIRA.ibadan)],
-              ["outside_ibadan", "Deliver outside Ibadan", naira(DELIVERY_FEE_NAIRA.outside_ibadan)],
-            ] as [Delivery, string, string][]).map(([value, label, price]) => (
-              <button key={value}
-                      className={delivery === value ? "is-active" : ""}
-                      onClick={() => setDelivery(value)}>
-                <span>{label}</span>
-                <span className="checkout-choice-price">{price}</span>
-              </button>
             ))}
-          </div>
+          </section>
 
-          <input name="full_name" placeholder="Full name" value={form.full_name} onChange={set} />
-          <input name="email" type="email" placeholder="Email" value={form.email} onChange={set} />
-          <input name="phone" placeholder="Phone number" value={form.phone} onChange={set} />
+          <section className="checkout-form">
+            {!session && (
+              <p className="checkout-tip">
+                <Link to={`/login?next=${encodeURIComponent("/cart")}`}>Sign in</Link> and
+                we'll fill this in for you — and keep your order history.
+              </p>
+            )}
 
-          <select name="archdeaconry" value={form.archdeaconry} onChange={set}>
-            <option value="">Your archdeaconry</option>
-            {ARCHDEACONRIES.map((a) => <option key={a}>{a}</option>)}
-          </select>
+            <h2>Where it's going</h2>
 
-          {delivery === "pickup" ? (
-            <select name="pickup_point" value={form.pickup_point} onChange={set}>
-              {PICKUP_POINTS.map((p) => <option key={p}>{p}</option>)}
+            <div className="checkout-choices">
+              {([
+                ["pickup", "Collect it", "Free"],
+                ["ibadan", "Deliver in Ibadan", naira(DELIVERY_FEE_NAIRA.ibadan)],
+                ["outside_ibadan", "Deliver outside Ibadan", naira(DELIVERY_FEE_NAIRA.outside_ibadan)],
+              ] as [Delivery, string, string][]).map(([value, label, price]) => (
+                <button key={value}
+                        className={delivery === value ? "is-active" : ""}
+                        onClick={() => setDelivery(value)}>
+                  <span>{label}</span>
+                  <span className="checkout-choice-price">{price}</span>
+                </button>
+              ))}
+            </div>
+
+            <input name="full_name" placeholder="Full name" value={form.full_name} onChange={set} />
+            <input name="email" type="email" placeholder="Email" value={form.email} onChange={set} />
+            <input name="phone" placeholder="Phone number" value={form.phone} onChange={set} />
+
+            <select name="archdeaconry" value={form.archdeaconry} onChange={set}>
+              <option value="">Your archdeaconry</option>
+              {ARCHDEACONRIES.map((a) => <option key={a}>{a}</option>)}
             </select>
-          ) : (
-            <textarea name="delivery_address" rows={3}
-                      placeholder="Delivery address — street, area, landmark"
-                      value={form.delivery_address} onChange={set} />
-          )}
 
-          <textarea name="note" rows={2} placeholder="Anything we should know? (optional)"
-                    value={form.note} onChange={set} />
-        </section>
+            {delivery === "pickup" ? (
+              <select name="pickup_point" value={form.pickup_point} onChange={set}>
+                {PICKUP_POINTS.map((p) => <option key={p}>{p}</option>)}
+              </select>
+            ) : (
+              <textarea name="delivery_address" rows={3}
+                        placeholder="Delivery address — street, area, landmark"
+                        value={form.delivery_address} onChange={set} />
+            )}
 
-        {/* ---------- summary ---------- */}
-        <aside className="checkout-summary">
-          <h2>Summary</h2>
-          <dl>
-            <div><dt>Items</dt><dd>{naira(subtotal)}</dd></div>
-            <div><dt>Delivery</dt><dd>{deliveryFee ? naira(deliveryFee) : "Free"}</dd></div>
-            <div className="checkout-total"><dt>Total</dt><dd>{naira(total)}</dd></div>
-          </dl>
+            <textarea name="note" rows={2} placeholder="Anything we should know? (optional)"
+                      value={form.note} onChange={set} />
+          </section>
 
-          {error && <p className="checkout-error">{error}</p>}
+          <aside className="checkout-summary">
+            <h2>Summary</h2>
+            <dl>
+              <div><dt>Items</dt><dd>{naira(subtotal)}</dd></div>
+              <div><dt>Delivery</dt><dd>{deliveryFee ? naira(deliveryFee) : "Free"}</dd></div>
+              <div className="checkout-total"><dt>Total</dt><dd>{naira(total)}</dd></div>
+            </dl>
 
-          <button className="product-add" onClick={placeOrder} disabled={busy}>
-            {busy ? "Opening payment…" : `Pay ${naira(total)}`}
-          </button>
-          <p className="product-fineprint">
-            Card, transfer and USSD, handled by Flutterwave.
-          </p>
-        </aside>
+            {error && <p className="checkout-error">{error}</p>}
+
+            <button className="product-add" onClick={placeOrder} disabled={busy}>
+              {busy ? "Opening payment…" : `Pay ${naira(total)}`}
+            </button>
+            <p className="product-fineprint">
+              Card, transfer and USSD, handled by Flutterwave.
+            </p>
+          </aside>
+        </div>
       </div>
+
+      <SiteFooter />
     </div>
   );
 }

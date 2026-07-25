@@ -18,7 +18,9 @@ export interface Profile {
   email: string | null;
   address: string | null;
   photo_url: string | null;
-  role: "member" | "admin" | "super_admin";
+  role: "member" | "admin" | "super_admin" | "archdeaconry_admin";
+  managed_archdeaconry: string | null;
+  admin_sections: string[] | null;
 }
 
 interface AuthValue {
@@ -26,9 +28,19 @@ interface AuthValue {
   profile: Profile | null;
   loading: boolean;
   isAdmin: boolean;
+  isSuperAdmin: boolean;
+  /** True if the user may open a given admin section. */
+  canAccess: (section: string) => boolean;
   refreshProfile: () => Promise<void>;
   signOut: () => Promise<void>;
 }
+
+/** The admin sections a super admin implicitly holds — mirrors the SQL. */
+export const ADMIN_SECTIONS = [
+  "programmes", "registrations", "store", "orders", "vouchers", "tags",
+  "announcements", "gallery", "blog", "carousel", "leadership",
+  "archdeaconries", "pages", "members",
+] as const;
 
 const AuthContext = createContext<AuthValue | undefined>(undefined);
 
@@ -120,7 +132,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     session,
     profile,
     loading,
-    isAdmin: profile?.role === "admin" || profile?.role === "super_admin",
+    isAdmin:
+      profile?.role === "admin" ||
+      profile?.role === "super_admin" ||
+      profile?.role === "archdeaconry_admin",
+    isSuperAdmin: profile?.role === "super_admin",
+    canAccess: (section: string) => {
+      if (!profile) return false;
+      if (profile.role === "super_admin") return true;
+      // Archdeaconry admins only ever see their own archdeaconry page.
+      if (profile.role === "archdeaconry_admin") return section === "my-archdeaconry";
+      if (profile.role === "admin") return (profile.admin_sections ?? []).includes(section);
+      return false;
+    },
     refreshProfile: async () => {
       if (session) await loadProfile(session.user.id);
     },

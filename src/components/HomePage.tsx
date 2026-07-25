@@ -355,6 +355,7 @@ export default function HomePage() {
           <Link to="/store">Store</Link>
           <Link to="/donate">Give</Link>
         </nav>
+        <p>nkanuzu kwesi Tech</p>
       </footer>
     </div>
   );

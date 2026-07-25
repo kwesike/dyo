@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, NavLink, useNavigate } from "react-router-dom";
+import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "./Authcontext";
 import { useCart } from "./Cartcontext";
 import logo from "../assets/LOGO.jpeg";
@@ -19,6 +20,24 @@ export default function Navbar() {
   const { count } = useCart();
   const navigate = useNavigate();
   const [open, setOpen] = useState(false);
+  const [archOpen, setArchOpen] = useState(false);
+  const [progOpen, setProgOpen] = useState(false);
+  const [archs, setArchs] = useState<{ slug: string; name: string }[]>([]);
+  const [pages, setPages] = useState<{ slug: string; title: string }[]>([]);
+
+  useEffect(() => {
+    (async () => {
+      const [{ data: a }, { data: p }] = await Promise.all([
+        supabase.from("archdeaconries").select("slug, name")
+          .order("sort_order", { ascending: true }),
+        supabase.from("site_pages").select("slug, title")
+          .eq("is_published", true).eq("in_menu", true)
+          .order("sort_order", { ascending: true }),
+      ]);
+      setArchs(a ?? []);
+      setPages(p ?? []);
+    })();
+  }, []);
 
   const close = () => setOpen(false);
 
@@ -49,9 +68,46 @@ export default function Navbar() {
       </button>
 
       <nav className={`site-nav-links${open ? " is-open" : ""}`}>
-        <NavLink to="/programmes" onClick={close}>Programmes</NavLink>
+        <div className={`site-nav-drop${progOpen ? " is-open" : ""}`}>
+          <button className="site-nav-droptrigger"
+                  aria-expanded={progOpen}
+                  onClick={() => setProgOpen((o) => !o)}>
+            Programmes ▾
+          </button>
+          <div className="site-nav-dropmenu">
+            <NavLink to="/programmes" onClick={() => { setProgOpen(false); close(); }}>
+              All programmes
+            </NavLink>
+            <NavLink to="/mission-voluteer" onClick={() => { setProgOpen(false); close(); }}>
+              Village Missions
+            </NavLink>
+          </div>
+        </div>
         <NavLink to="/store" onClick={close}>Store</NavLink>
-        <NavLink to="/mission-voluteer" onClick={close}>Village Missions</NavLink>
+        <NavLink to="/gallery" onClick={close}>Gallery</NavLink>
+        <NavLink to="/blog" onClick={close}>Blog</NavLink>
+
+        {archs.length > 0 && (
+          <div className={`site-nav-drop${archOpen ? " is-open" : ""}`}>
+            <button className="site-nav-droptrigger"
+                    aria-expanded={archOpen}
+                    onClick={() => setArchOpen((o) => !o)}>
+              Archdeaconries ▾
+            </button>
+            <div className="site-nav-dropmenu">
+              {archs.map((a) => (
+                <NavLink key={a.slug} to={`/archdeaconry/${a.slug}`}
+                         onClick={() => { setArchOpen(false); close(); }}>
+                  {a.name}
+                </NavLink>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {pages.map((pg) => (
+          <NavLink key={pg.slug} to={`/p/${pg.slug}`} onClick={close}>{pg.title}</NavLink>
+        ))}
         <NavLink to="/donate" onClick={close}>Give</NavLink>
 
         {/* Cart is a symbol, with the count riding on the corner. The word

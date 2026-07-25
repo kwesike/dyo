@@ -37,3 +37,26 @@ export function RequireAdmin({ children }: { children: ReactNode }) {
   }
   return <>{children}</>;
 }
+
+
+/**
+ * Gates an admin route on a specific section. A super admin passes everything;
+ * a plain admin needs the section granted; an archdeaconry admin only ever
+ * passes "my-archdeaconry". The database enforces the same rules on write —
+ * this just stops the page rendering at all.
+ */
+export function RequireSection({ section, children }: {
+  section: string; children: ReactNode;
+}) {
+  const { loading, canAccess, isAdmin } = useAuth();
+  if (loading) return <Waiting />;
+  if (!isAdmin || !canAccess(section)) {
+    return (
+      <div style={{ padding: 50, textAlign: "center" }}>
+        <h2>Not your section</h2>
+        <p>You don't have access to this part of the admin area.</p>
+      </div>
+    );
+  }
+  return <>{children}</>;
+}

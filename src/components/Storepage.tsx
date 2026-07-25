@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { supabase } from "./../lib/supabaseClient";
-import { naira } from "./../lib/Payments";
+import { supabase } from "../lib/supabaseClient";
+import { naira } from "../lib/Payments";
 import { useCart } from "./Cartcontext";
+import Navbar from "./Navbar";
+import SiteFooter from "./Sitefooter";
 import "./Store.css";
 
 interface Product {
@@ -48,6 +50,8 @@ export default function StorePage() {
 
   return (
     <div className="store">
+      <Navbar />
+
       <header className="store-head">
         <div>
           <p className="store-eyebrow">Diocesan Youth Organization</p>
@@ -97,6 +101,8 @@ export default function StorePage() {
           ))}
         </div>
       )}
+
+      <SiteFooter />
     </div>
   );
 }

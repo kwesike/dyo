@@ -1,8 +1,8 @@
 import { BrowserRouter as Router, Routes, Route, NavLink, Navigate } from "react-router-dom";
 
-import { AuthProvider } from "./Authcontext";
-import { CartProvider } from "./Cartcontext";
-import { RequireAdmin, RequireAuth } from "./components/Routeguards";
+import { AuthProvider } from "./components/Authcontext";
+import { CartProvider } from "./components/Cartcontext";
+import { RequireAdmin, RequireAuth, RequireSection } from "./components/Routeguards";
 
 /* ---------- public pages ---------- */
 import HomePage from "./components/HomePage";
@@ -20,6 +20,11 @@ import CheckYourEmail from "./components/Checkyouremail";
 import AccountPage from "./components/Accountpage";
 
 /* ---------- programmes ---------- */
+import GalleryPage from "./components/Gallerypage";
+import BlogPage from "./components/Blogpage";
+import BlogPost from "./components/Blogpost";
+import ArchdeaconryPage from "./components/Archdeaconrypage";
+import SitePage from "./components/Sitepage";
 import ProgrammesPage from "./components/Programmepage";
 import ProgrammeDetail from "./components/Programmedetail";
 
@@ -34,11 +39,17 @@ import AdminLayout from "./components/Adminlayout";
 import AdminHome from "./components/Adminhome";
 import AdminProgrammes from "./components/Adminprogrammes";
 import AdminRegistrations from "./components/Adminregistrations";
-import AdminRegistrationsIndex from "./components/Adminregistrationsindex";
+import AdminRegistrationsIndex from "./components/Adminregistrationindex";
 import AdminProducts from "./components/Adminproducts";
 import AdminOrders from "./components/Adminorders";
 import AdminAnnouncements from "./components/Adminannouncements";
 import AdminLeadership from "./components/Adminleadership";
+import AdminCarousel from "./components/Admincarousel";
+import AdminGallery from "./components/Admingallery";
+import AdminBlog from "./components/Adminblog";
+import AdminAccess from "./components/Adminaccess";
+import MyArchdeaconry from "./components/Myarchdeaconry";
+import AdminPages from "./components/Adminpages";
 import AdminMembers from "./components/Adminmembers";
 import AdminDashboard from "./components/AdminDashboard";
 import VoucherGenerator from "./components/VoucherGenerator";
@@ -78,6 +89,13 @@ export default function App() {
             <Route path="/admin-login" element={<Navigate to="/login" replace />} />
             <Route path="/account" element={<RequireAuth><AccountPage /></RequireAuth>} />
 
+            {/* ============ GALLERY & BLOG ============ */}
+            <Route path="/gallery" element={<GalleryPage />} />
+            <Route path="/blog" element={<BlogPage />} />
+            <Route path="/blog/:slug" element={<BlogPost />} />
+            <Route path="/archdeaconry/:slug" element={<ArchdeaconryPage />} />
+            <Route path="/p/:slug" element={<SitePage />} />
+
             {/* ============ PROGRAMMES ============ */}
             <Route path="/programmes" element={<ProgrammesPage />} />
             <Route path="/programmes/:slug" element={<ProgrammeDetail />} />
@@ -99,19 +117,25 @@ export default function App() {
             <Route path="/admin" element={<RequireAdmin><AdminLayout /></RequireAdmin>}>
               <Route index element={<AdminHome />} />
 
-              <Route path="programmes" element={<AdminProgrammes />} />
-              <Route path="programmes/:id/registrations" element={<AdminRegistrations />} />
-              <Route path="registrations" element={<AdminRegistrationsIndex />} />
+              <Route path="programmes" element={<RequireSection section="programmes"><AdminProgrammes /></RequireSection>} />
+              <Route path="programmes/:id/registrations" element={<RequireSection section="registrations"><AdminRegistrations /></RequireSection>} />
+              <Route path="registrations" element={<RequireSection section="registrations"><AdminRegistrationsIndex /></RequireSection>} />
               <Route path="vouchers" element={<VoucherGenerator />} />
               <Route path="tags" element={<AdminTags />} />
 
-              <Route path="products" element={<AdminProducts />} />
-              <Route path="orders" element={<AdminOrders />} />
+              <Route path="products" element={<RequireSection section="store"><AdminProducts /></RequireSection>} />
+              <Route path="orders" element={<RequireSection section="orders"><AdminOrders /></RequireSection>} />
 
-              <Route path="announcements" element={<AdminAnnouncements />} />
-              <Route path="leadership" element={<AdminLeadership />} />
+              <Route path="carousel" element={<RequireSection section="carousel"><AdminCarousel /></RequireSection>} />
+              <Route path="announcements" element={<RequireSection section="announcements"><AdminAnnouncements /></RequireSection>} />
+              <Route path="gallery" element={<RequireSection section="gallery"><AdminGallery /></RequireSection>} />
+              <Route path="blog" element={<RequireSection section="blog"><AdminBlog /></RequireSection>} />
+              <Route path="leadership" element={<RequireSection section="leadership"><AdminLeadership /></RequireSection>} />
 
-              <Route path="members" element={<AdminMembers />} />
+              <Route path="members" element={<RequireSection section="members"><AdminMembers /></RequireSection>} />
+              <Route path="access" element={<AdminAccess />} />
+              <Route path="my-archdeaconry" element={<MyArchdeaconry />} />
+              <Route path="pages" element={<RequireSection section="pages"><AdminPages /></RequireSection>} />
               <Route path="legacy" element={<AdminDashboard />} />
             </Route>
 

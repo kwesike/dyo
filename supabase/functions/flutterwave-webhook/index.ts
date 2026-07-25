@@ -7,7 +7,7 @@
 // Deploy:  supabase functions deploy flutterwave-webhook --no-verify-jwt
 // Secrets: supabase secrets set FLW_SECRET_HASH=some-long-random-string
 
-import { createClient } from "@supabase/supabase-js";
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2.45.4";
 
 const SECRET_HASH = Deno.env.get("FLW_SECRET_HASH")!;
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;

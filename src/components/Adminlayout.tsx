@@ -18,6 +18,8 @@ interface Counts {
   unpaid: number;
   toPack: number;
   leaders: number;
+  photos: number;
+  drafts_blog: number;
 }
 
 const Icon = ({ d }: { d: string }) => (
@@ -39,16 +41,19 @@ const ICONS = {
   vouchers: "M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4V8zM13 6v12",
   tags: "M3 3h7l11 11-7 7L3 10V3zM7.5 7.5h.01",
   archive: "M3 4h18v4H3zM5 8v12h14V8M10 12h4",
+  gallery: "M4 5h16v14H4zM4 15l4.5-4.5 4 4L16 11l4 4M8.5 9.2h.01",
+  blog: "M5 3h9l5 5v13H5zM14 3v5h5M9 12h6M9 16h4",
+  slideshow: "M3 4h18v12H3zM8 20h8M12 16v4",
 };
 
 export default function AdminLayout() {
-  const { profile, signOut } = useAuth();
+  const { profile, signOut, canAccess, isSuperAdmin } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
 
   const [open, setOpen] = useState(false);
   const [counts, setCounts] = useState<Counts>({
-    drafts: 0, unpaid: 0, toPack: 0, leaders: 0,
+    drafts: 0, unpaid: 0, toPack: 0, leaders: 0, photos: 0, drafts_blog: 0,
   });
 
   // Close the drawer whenever the route changes, or it stays open over
@@ -60,11 +65,13 @@ export default function AdminLayout() {
   async function loadCounts() {
     const head = { count: "exact" as const, head: true };
 
-    const [drafts, unpaid, toPack, leaders] = await Promise.all([
+    const [drafts, unpaid, toPack, leaders, photos, blogDrafts] = await Promise.all([
       supabase.from("programmes").select("id", head).eq("is_published", false),
       supabase.from("programme_registrations").select("id", head).eq("payment_status", "pending"),
       supabase.from("orders").select("id", head).eq("status", "paid").eq("fulfilment", "unfulfilled"),
       supabase.from("leadership").select("id", head).eq("is_active", true),
+      supabase.from("gallery_images").select("id", head).eq("is_published", true),
+      supabase.from("blog_posts").select("id", head).eq("is_published", false),
     ]);
 
     setCounts({
@@ -72,6 +79,8 @@ export default function AdminLayout() {
       unpaid: unpaid.count ?? 0,
       toPack: toPack.count ?? 0,
       leaders: leaders.count ?? 0,
+      photos: photos.count ?? 0,
+      drafts_blog: blogDrafts.count ?? 0,
     });
   }
 
@@ -116,31 +125,65 @@ export default function AdminLayout() {
         </div>
 
         <nav className="admin-nav">
-          <Item to="/admin" icon={ICONS.overview} label="Overview" />
+          {profile?.role === "archdeaconry_admin" ? (
+            <Item to="/admin/my-archdeaconry" icon={ICONS.leadership} label="My archdeaconry" />
+          ) : (
+            <>
+              <Item to="/admin" icon={ICONS.overview} label="Overview" />
 
-          <p className="admin-nav-group">Programmes</p>
-          <Item to="/admin/programmes" icon={ICONS.programmes} label="Programmes"
-                count={counts.drafts} />
-          <Item to="/admin/registrations" icon={ICONS.members} label="Registrations"
-                count={counts.unpaid} alert />
-          <Item to="/admin/vouchers" icon={ICONS.vouchers} label="Vouchers" />
-          <Item to="/admin/tags" icon={ICONS.tags} label="Tags" />
+              {(canAccess("programmes") || canAccess("registrations")
+                || canAccess("vouchers") || canAccess("tags")) && (
+                <p className="admin-nav-group">Programmes</p>
+              )}
+              {canAccess("programmes") &&
+                <Item to="/admin/programmes" icon={ICONS.programmes} label="Programmes" count={counts.drafts} />}
+              {canAccess("registrations") &&
+                <Item to="/admin/registrations" icon={ICONS.members} label="Registrations" count={counts.unpaid} alert />}
+              {canAccess("vouchers") &&
+                <Item to="/admin/vouchers" icon={ICONS.vouchers} label="Vouchers" />}
+              {canAccess("tags") &&
+                <Item to="/admin/tags" icon={ICONS.tags} label="Tags" />}
 
-          <p className="admin-nav-group">Store</p>
-          <Item to="/admin/products" icon={ICONS.store} label="Items" />
-          <Item to="/admin/orders" icon={ICONS.orders} label="Orders"
-                count={counts.toPack} alert />
+              {(canAccess("store") || canAccess("orders")) && (
+                <p className="admin-nav-group">Store</p>
+              )}
+              {canAccess("store") &&
+                <Item to="/admin/products" icon={ICONS.store} label="Items" />}
+              {canAccess("orders") &&
+                <Item to="/admin/orders" icon={ICONS.orders} label="Orders" count={counts.toPack} alert />}
 
-          <p className="admin-nav-group">The site</p>
-          <Item to="/admin/announcements" icon={ICONS.flyers} label="Flyers & updates" />
-          <Item to="/admin/leadership" icon={ICONS.leadership} label="Leadership"
-                count={counts.leaders} />
+              {(canAccess("carousel") || canAccess("announcements") || canAccess("gallery")
+                || canAccess("blog") || canAccess("leadership") || canAccess("pages")
+                || canAccess("archdeaconries")) && (
+                <p className="admin-nav-group">The site</p>
+              )}
+              {canAccess("carousel") &&
+                <Item to="/admin/carousel" icon={ICONS.slideshow} label="Slideshow" />}
+              {canAccess("announcements") &&
+                <Item to="/admin/announcements" icon={ICONS.flyers} label="Flyers & updates" />}
+              {canAccess("gallery") &&
+                <Item to="/admin/gallery" icon={ICONS.gallery} label="Gallery" count={counts.photos} />}
+              {canAccess("blog") &&
+                <Item to="/admin/blog" icon={ICONS.blog} label="Blog" count={counts.drafts_blog} alert />}
+              {canAccess("leadership") &&
+                <Item to="/admin/leadership" icon={ICONS.leadership} label="Leadership" count={counts.leaders} />}
+              {canAccess("archdeaconries") &&
+                <Item to="/admin/my-archdeaconry" icon={ICONS.leadership} label="Archdeaconries" />}
+              {canAccess("pages") &&
+                <Item to="/admin/pages" icon={ICONS.blog} label="Custom pages" />}
 
-          <p className="admin-nav-group">People</p>
-          <Item to="/admin/members" icon={ICONS.members} label="Members" />
+              {(canAccess("members") || isSuperAdmin) && (
+                <p className="admin-nav-group">People</p>
+              )}
+              {canAccess("members") &&
+                <Item to="/admin/members" icon={ICONS.members} label="Members" />}
+              {isSuperAdmin &&
+                <Item to="/admin/access" icon={ICONS.members} label="Access & roles" />}
 
-          <p className="admin-nav-group">Archive</p>
-          <Item to="/admin/legacy" icon={ICONS.archive} label="Old records" />
+              <p className="admin-nav-group">Archive</p>
+              <Item to="/admin/legacy" icon={ICONS.archive} label="Old records" />
+            </>
+          )}
         </nav>
 
         <div className="admin-spine-foot">

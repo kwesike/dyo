@@ -1,0 +1,145 @@
+@import url("https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600;6..72,700&display=swap");
+
+.rcpt {
+  --maroon: #800000;
+  --maroon-deep: #5c0000;
+  --gold: #a07b12;
+  --ink: #241a1a;
+  --muted: #6b5f5f;
+  --line: #e6dede;
+  min-height: 100vh;
+  background: #fbf8f5;
+  color: var(--ink);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+.rcpt-status { text-align: center; padding: 70px 20px; color: var(--muted); }
+.rcpt-status h2 { font-family: Newsreader, Georgia, serif; color: var(--ink); }
+
+.rcpt-head {
+  max-width: 640px;
+  margin: 0 auto;
+  text-align: center;
+  padding: 48px 20px 10px;
+}
+.rcpt-eyebrow {
+  font-size: 0.74rem; letter-spacing: 0.18em; text-transform: uppercase;
+  color: var(--maroon); font-weight: 600; margin: 0 0 10px;
+}
+.rcpt-head h1 {
+  font-family: Newsreader, Georgia, serif;
+  font-size: clamp(1.8rem, 4.5vw, 2.7rem);
+  font-weight: 600; letter-spacing: -0.02em; margin: 0;
+}
+.rcpt-sub { color: var(--muted); margin: 12px 0 0; }
+
+/* the receipt card */
+.rcpt-card-wrap { display: flex; justify-content: center; padding: 30px 20px; }
+
+.rcpt-card {
+  width: 380px;
+  max-width: 100%;
+  background: #fff;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: 0 14px 40px rgba(92, 0, 0, 0.16);
+  border: 1px solid var(--line);
+}
+
+.rcpt-card-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 20px 24px;
+  background: linear-gradient(135deg, var(--maroon-deep), #3a0000);
+  color: #fff;
+}
+.rcpt-logo {
+  width: 46px; height: 46px;
+  border-radius: 10px;
+  object-fit: cover;
+  background: #fff;
+  padding: 3px;
+  flex-shrink: 0;
+}
+.rcpt-org {
+  font-family: Newsreader, Georgia, serif;
+  font-weight: 600; font-size: 1.02rem; margin: 0; line-height: 1.2;
+}
+.rcpt-org-sub {
+  font-size: 0.72rem; letter-spacing: 0.14em; text-transform: uppercase;
+  color: #ffd700; margin: 3px 0 0;
+}
+
+.rcpt-card-body { padding: 24px; text-align: center; }
+.rcpt-label {
+  font-size: 0.72rem; letter-spacing: 0.16em; text-transform: uppercase;
+  color: var(--muted); margin: 0 0 10px;
+}
+.rcpt-amount {
+  font-family: Newsreader, Georgia, serif;
+  font-size: 2.6rem; font-weight: 700; color: var(--maroon);
+  margin: 0 0 20px; letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+}
+
+.rcpt-lines { margin: 0; text-align: left; display: grid; gap: 10px; }
+.rcpt-lines > div {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  padding-bottom: 9px; border-bottom: 1px dashed var(--line);
+}
+.rcpt-lines > div:last-child { border-bottom: none; }
+.rcpt-lines dt { color: var(--muted); font-size: 0.82rem; margin: 0; }
+.rcpt-lines dd {
+  margin: 0; font-weight: 500; text-align: right;
+  font-size: 0.92rem; word-break: break-word;
+}
+.rcpt-ref { font-family: ui-monospace, "Cascadia Code", monospace; letter-spacing: 0.05em; }
+
+.rcpt-pill {
+  font-size: 0.72rem; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+}
+.rcpt-pill.is-ok { background: #e4f5e8; color: #1b6b34; }
+.rcpt-pill.is-wait { background: #fdf4e1; color: #8a6212; }
+
+.rcpt-message {
+  margin: 18px 0 0; padding: 12px 14px;
+  background: #fbf6f0; border-left: 3px solid var(--gold); border-radius: 0 8px 8px 0;
+  font-family: Newsreader, Georgia, serif; font-style: italic;
+  color: var(--ink); font-size: 0.95rem; text-align: left;
+}
+
+.rcpt-card-foot {
+  padding: 18px 24px 24px;
+  border-top: 1px dashed var(--line);
+  text-align: center;
+}
+.rcpt-barcode { width: 78%; max-width: 240px; height: auto; }
+.rcpt-thanks {
+  margin: 12px 0 0;
+  font-family: Newsreader, Georgia, serif; font-style: italic;
+  color: var(--muted); font-size: 0.85rem;
+}
+
+.rcpt-actions {
+  display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+  padding: 6px 20px 70px;
+}
+.rcpt-btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  min-height: 48px; padding: 12px 28px;
+  background: var(--maroon); color: #fff; border: none;
+  border-radius: 11px; font: inherit; font-weight: 600; font-size: 0.98rem;
+  cursor: pointer; text-decoration: none;
+}
+.rcpt-btn:hover { background: var(--maroon-deep); }
+.rcpt-btn:disabled { opacity: 0.55; }
+.rcpt-btn--quiet {
+  background: #fff; color: var(--maroon); border: 1px solid var(--line);
+}
+.rcpt-btn--quiet:hover { background: #f4eeea; }
+
+@media (max-width: 480px) {
+  .rcpt-head { padding: 34px 16px 8px; }
+  .rcpt-amount { font-size: 2.2rem; }
+}

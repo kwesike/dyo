@@ -1,0 +1,267 @@
+@import url("https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,400;6..72,500;6..72,600&display=swap");
+
+/* ============================================================
+   Gallery, blog and the shared footer.
+   Scoped under .content-page / .site-footer so nothing leaks.
+   ============================================================ */
+
+.content-page {
+  --maroon: #800000;
+  --maroon-deep: #5c0000;
+  --gold: #a07b12;
+  --ink: #241a1a;
+  --muted: #6b5f5f;
+  --line: #e6dede;
+
+  min-height: 100vh;
+  color: var(--ink);
+  background: #fff;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+
+.content-eyebrow {
+  font-size: 0.76rem;
+  letter-spacing: 0.17em;
+  text-transform: uppercase;
+  color: var(--maroon);
+  font-weight: 600;
+  margin: 0 0 8px;
+}
+
+.content-head {
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 44px 20px 24px;
+  border-bottom: 2px solid var(--maroon);
+}
+.content-head h1 {
+  font-family: Newsreader, Georgia, serif;
+  font-size: clamp(2rem, 5vw, 3rem);
+  font-weight: 600;
+  letter-spacing: -0.02em;
+  margin: 0;
+}
+.content-head p { color: var(--muted); margin: 10px 0 0; max-width: 52ch; }
+
+.content-body { max-width: 1100px; margin: 0 auto; padding: 32px 20px 80px; }
+
+.content-status { text-align: center; padding: 70px 20px; color: var(--muted); }
+.content-status h2 { font-family: Newsreader, Georgia, serif; color: var(--ink); }
+
+.content-filters { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 28px; }
+.content-filters button {
+  border: 1px solid var(--line);
+  background: #fff;
+  border-radius: 999px;
+  padding: 8px 17px;
+  font: inherit;
+  font-size: 0.9rem;
+  color: var(--muted);
+  cursor: pointer;
+}
+.content-filters button.is-active {
+  background: var(--maroon); border-color: var(--maroon); color: #fff;
+}
+
+/* ---------------- gallery ---------------- */
+
+.gallery-grid {
+  columns: 4 230px;          /* masonry, so tall and wide photos both sit well */
+  column-gap: 14px;
+}
+
+.gallery-tile {
+  display: block;
+  width: 100%;
+  padding: 0;
+  border: none;
+  background: none;
+  cursor: pointer;
+  break-inside: avoid;
+  margin-bottom: 14px;
+  position: relative;
+  border-radius: 10px;
+  overflow: hidden;
+  line-height: 0;
+}
+.gallery-tile img { width: 100%; height: auto; display: block; transition: transform 0.45s ease; }
+.gallery-tile:hover img { transform: scale(1.04); }
+
+.gallery-tile span {
+  position: absolute;
+  inset: auto 0 0 0;
+  padding: 22px 12px 10px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.75));
+  color: #fff;
+  font-size: 0.84rem;
+  line-height: 1.4;
+  text-align: left;
+  opacity: 0;
+  transition: opacity 0.25s ease;
+}
+.gallery-tile:hover span,
+.gallery-tile:focus-visible span { opacity: 1; }
+
+/* lightbox */
+.lightbox {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(12, 3, 3, 0.94);
+  display: grid;
+  place-items: center;
+  padding: 40px 20px;
+}
+.lightbox figure { margin: 0; max-width: 92vw; max-height: 86vh; text-align: center; }
+.lightbox img { max-width: 100%; max-height: 78vh; border-radius: 8px; display: block; margin: 0 auto; }
+.lightbox figcaption { color: rgba(255, 255, 255, 0.82); margin-top: 14px; font-size: 0.92rem; }
+
+.lightbox-close {
+  position: absolute; top: 18px; right: 20px;
+  width: 44px; height: 44px; border-radius: 50%;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  background: rgba(0, 0, 0, 0.4); color: #fff;
+  font-size: 1rem; cursor: pointer;
+}
+.lightbox-arrow {
+  position: absolute; top: 50%; transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.45); color: #fff;
+  border: none; font-size: 1.7rem;
+  padding: 14px 18px; border-radius: 50%; cursor: pointer;
+}
+.lightbox-arrow.left { left: 16px; }
+.lightbox-arrow.right { right: 16px; }
+.lightbox-arrow:hover { background: rgba(255, 215, 0, 0.85); color: #000; }
+
+/* ---------------- blog ---------------- */
+
+.blog-lead {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr);
+  gap: 30px;
+  align-items: center;
+  text-decoration: none;
+  color: inherit;
+  padding-bottom: 34px;
+  margin-bottom: 34px;
+  border-bottom: 1px solid var(--line);
+}
+.blog-lead img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; border-radius: 14px; }
+.blog-lead h2 {
+  font-family: Newsreader, Georgia, serif;
+  font-size: clamp(1.5rem, 3.2vw, 2.1rem);
+  font-weight: 600;
+  margin: 8px 0 10px;
+  letter-spacing: -0.015em;
+}
+
+.blog-meta {
+  font-size: 0.76rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--gold);
+  font-weight: 600;
+  margin: 0;
+}
+.blog-excerpt { color: var(--muted); line-height: 1.65; margin: 0; }
+.blog-more { display: inline-block; margin-top: 14px; color: var(--maroon); font-weight: 600; }
+
+.blog-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 26px;
+}
+.blog-card {
+  text-decoration: none;
+  color: inherit;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  overflow: hidden;
+  background: #fff;
+  transition: box-shadow 0.25s ease, transform 0.25s ease;
+}
+.blog-card:hover { transform: translateY(-3px); box-shadow: 0 12px 28px rgba(128, 0, 0, 0.12); }
+.blog-card img { width: 100%; aspect-ratio: 16 / 10; object-fit: cover; display: block; }
+.blog-card-body { padding: 16px 17px 20px; }
+.blog-card h3 {
+  font-family: Newsreader, Georgia, serif;
+  font-size: 1.16rem;
+  font-weight: 600;
+  margin: 7px 0 8px;
+  line-height: 1.3;
+}
+
+/* ---------------- single post ---------------- */
+
+.post { max-width: 720px; margin: 0 auto; padding: 34px 20px 60px; }
+.post-back { color: var(--muted); text-decoration: none; font-size: 0.9rem; }
+.post h1 {
+  font-family: Newsreader, Georgia, serif;
+  font-size: clamp(1.9rem, 5vw, 2.9rem);
+  font-weight: 600;
+  letter-spacing: -0.025em;
+  line-height: 1.12;
+  margin: 10px 0 12px;
+}
+.post-author { color: var(--muted); margin: 0 0 24px; font-style: italic; }
+.post-cover { width: 100%; border-radius: 14px; margin-bottom: 32px; }
+
+.post-body {
+  font-family: Newsreader, Georgia, serif;
+  font-size: 1.18rem;
+  line-height: 1.75;
+}
+.post-body p { margin: 0 0 1.3em; }
+/* An opening flourish, the way a printed reflection would set it */
+.post-body p:first-child::first-letter {
+  float: left;
+  font-size: 3.4em;
+  line-height: 0.82;
+  padding: 0.06em 0.09em 0 0;
+  color: var(--maroon);
+  font-weight: 600;
+}
+
+.post-more-title {
+  font-family: Newsreader, Georgia, serif;
+  font-size: 1.3rem;
+  font-weight: 600;
+  padding-top: 30px;
+  border-top: 1px solid var(--line);
+  margin-bottom: 22px;
+}
+
+/* ---------------- footer ---------------- */
+
+.site-footer {
+  background: #2b0000;
+  color: rgba(255, 255, 255, 0.62);
+  text-align: center;
+  padding: 38px 20px;
+  font-size: 0.9rem;
+}
+.site-footer nav {
+  display: flex; gap: 22px; justify-content: center;
+  flex-wrap: wrap; margin-bottom: 16px;
+}
+.site-footer a { color: #ffd700; text-decoration: none; }
+.site-footer a:hover { text-decoration: underline; }
+.site-footer p { margin: 0; }
+
+/* ---------------- responsive ---------------- */
+
+@media (max-width: 800px) {
+  .blog-lead { grid-template-columns: 1fr; gap: 18px; }
+  .gallery-grid { columns: 2 150px; column-gap: 10px; }
+  .gallery-tile { margin-bottom: 10px; }
+  .gallery-tile span { opacity: 1; }   /* no hover on touch */
+  .content-head { padding: 30px 16px 20px; }
+  .content-body { padding: 24px 16px 60px; }
+  .lightbox-arrow { font-size: 1.3rem; padding: 10px 13px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .gallery-tile img, .blog-card { transition: none; }
+  .gallery-tile:hover img { transform: none; }
+  .blog-card:hover { transform: none; }
+}

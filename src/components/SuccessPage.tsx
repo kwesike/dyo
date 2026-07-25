@@ -137,7 +137,7 @@ export default function SuccessPage() {
       const blob = await composeAttendingCard({
         templateUrl: programme.attending_template_url,
         photoUrl: photo,
-        name: row!.full_name,
+        details: { name: row!.full_name },
         config: (programme.card_config as never) ?? DEFAULT_CARD_CONFIG,
       });
       const url = await uploadAttendingCard(blob, row!.id);

@@ -1,11 +1,14 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { supabase } from "./../lib/supabaseClient";
+import { supabase } from "../lib/supabaseClient";
 import { useAuth } from "./Authcontext";
-import { uploadPublicFile } from "./../lib/Storage";
-import { ARCHDEACONRIES } from "./../lib/Constants";
-import { naira } from "./../lib/Payments";
-import { loadFaceModels, detectFace } from "./../utils/faceDetection";
+import { uploadPublicFile } from "../lib/Storage";
+import { ARCHDEACONRIES } from "../lib/Constants";
+import { naira } from "../lib/Payments";
+import { loadFaceModels, detectFace } from "../utils/faceDetection";
+import Navbar from "./Navbar";
+import SiteFooter from "./Sitefooter";
+import "./Account.css";
 
 /**
  * The profile photo saved here is what lands on every attendance card, so it
@@ -44,7 +47,7 @@ async function cropToFace(file: File): Promise<File> {
 }
 
 export default function AccountPage() {
-  const { session, profile, refreshProfile, signOut } = useAuth();
+  const { session, profile, refreshProfile } = useAuth();
   const [form, setForm] = useState<any>({});
   const [registrations, setRegistrations] = useState<any[]>([]);
   const [orders, setOrders] = useState<any[]>([]);
@@ -104,111 +107,125 @@ export default function AccountPage() {
   }
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
-      <div className="flex justify-between items-start mb-6">
-        <div>
-          <h1 className="text-2xl font-bold">My account</h1>
-          <p className="text-gray-600 text-sm">{profile?.email}</p>
-        </div>
-        <button className="linkish" onClick={signOut}>Sign out</button>
+    <div className="account">
+      <Navbar />
+
+      <header className="account-head">
+        <p className="account-eyebrow">Your account</p>
+        <h1>{profile?.full_name || "My account"}</h1>
+        <p>{profile?.email}</p>
+      </header>
+
+      <div className="account-body">
+        {/* photo + details */}
+        <section className="account-card">
+          <div className="account-photo-row">
+            {profile?.photo_url
+              ? <img src={profile.photo_url} alt="" className="account-avatar" />
+              : <div className="account-avatar account-avatar--blank">
+                  {profile?.full_name?.[0] ?? "?"}
+                </div>}
+            <div>
+              <p className="account-photo-title">Profile photo</p>
+              <p className="account-photo-note">
+                This is the face that appears on your attendance cards.
+              </p>
+              <input type="file" accept="image/*"
+                     onChange={(e) => changePhoto(e.target.files?.[0])} disabled={busy} />
+            </div>
+          </div>
+
+          <div className="account-grid">
+            <label>Full name
+              <input name="full_name" value={form.full_name ?? ""} onChange={set} />
+            </label>
+            <label>Gender
+              <select name="gender" value={form.gender ?? ""} onChange={set}>
+                <option value="">Choose</option><option>Male</option><option>Female</option>
+              </select>
+            </label>
+            <label>Phone
+              <input name="phone" value={form.phone ?? ""} onChange={set} />
+            </label>
+            <label>Date of birth
+              <input type="date" name="date_of_birth" value={form.date_of_birth ?? ""} onChange={set} />
+            </label>
+            <label>Archdeaconry
+              <select name="archdeaconry" value={form.archdeaconry ?? ""} onChange={set}>
+                <option value="">Choose</option>
+                {ARCHDEACONRIES.map((a) => <option key={a}>{a}</option>)}
+              </select>
+            </label>
+            <label>Church
+              <input name="church" value={form.church ?? ""} onChange={set} />
+            </label>
+            <label>Occupation
+              <input name="occupation" value={form.occupation ?? ""} onChange={set} />
+            </label>
+            <label>Highest qualification
+              <input name="educational_qualification"
+                     value={form.educational_qualification ?? ""} onChange={set} />
+            </label>
+          </div>
+          <label className="account-full">Address
+            <input name="address" value={form.address ?? ""} onChange={set} />
+          </label>
+
+          {message && <p className="account-message">{message}</p>}
+
+          <button className="account-save" onClick={save} disabled={busy}>
+            {busy ? "Saving…" : "Save changes"}
+          </button>
+        </section>
+
+        {/* registrations */}
+        <section className="account-section">
+          <h2>My programmes</h2>
+          {registrations.length === 0 ? (
+            <p className="account-empty">
+              You haven't registered for anything yet.{" "}
+              <Link to="/programmes">See what's on</Link>.
+            </p>
+          ) : (
+            <div className="account-list">
+              {registrations.map((r) => (
+                <Link key={r.id} to={`/programmes/${r.programmes?.slug}`} className="account-row">
+                  <span>
+                    <strong>{r.programmes?.title}</strong>
+                    {r.programmes?.starts_at &&
+                      <em>{" · "}{new Date(r.programmes.starts_at).toLocaleDateString("en-NG")}</em>}
+                  </span>
+                  <span className={`account-pill ${
+                    r.payment_status === "pending" ? "is-due" : "is-ok"}`}>
+                    {r.payment_status === "pending" ? "Payment due" : "Confirmed"}
+                  </span>
+                </Link>
+              ))}
+            </div>
+          )}
+        </section>
+
+        {/* orders */}
+        <section className="account-section">
+          <h2>My orders</h2>
+          {orders.length === 0 ? (
+            <p className="account-empty">
+              Nothing ordered yet. <Link to="/store">Visit the store</Link>.
+            </p>
+          ) : (
+            <div className="account-list">
+              {orders.map((o) => (
+                <Link key={o.id} to={`/orders/${o.id}`} className="account-row">
+                  <span>{o.order_number} · {new Date(o.created_at).toLocaleDateString("en-NG")}</span>
+                  <span>{naira(o.total_naira)} · {o.status}</span>
+                </Link>
+              ))}
+            </div>
+          )}
+        </section>
       </div>
 
-      {/* photo */}
-      <div className="flex items-center gap-4 mb-6">
-        {profile?.photo_url
-          ? <img src={profile.photo_url} alt="" className="w-24 h-24 rounded-full object-cover border" />
-          : <div className="w-24 h-24 rounded-full bg-gray-200 grid place-items-center text-2xl">
-              {profile?.full_name?.[0] ?? "?"}
-            </div>}
-        <div>
-          <p className="font-medium">Profile photo</p>
-          <p className="text-sm text-gray-600 mb-1">
-            This is the face that appears on your attendance cards.
-          </p>
-          <input type="file" accept="image/*"
-                 onChange={(e) => changePhoto(e.target.files?.[0])} disabled={busy} />
-        </div>
-      </div>
-
-      {/* details */}
-      <div className="grid md:grid-cols-2 gap-3">
-        <input className="border rounded px-3 py-2" name="full_name" placeholder="Full name"
-               value={form.full_name ?? ""} onChange={set} />
-        <select className="border rounded px-3 py-2" name="gender" value={form.gender ?? ""} onChange={set}>
-          <option value="">Gender</option><option>Male</option><option>Female</option>
-        </select>
-        <input className="border rounded px-3 py-2" name="phone" placeholder="Phone"
-               value={form.phone ?? ""} onChange={set} />
-        <input className="border rounded px-3 py-2" type="date" name="date_of_birth"
-               value={form.date_of_birth ?? ""} onChange={set} />
-        <select className="border rounded px-3 py-2" name="archdeaconry"
-                value={form.archdeaconry ?? ""} onChange={set}>
-          <option value="">Archdeaconry</option>
-          {ARCHDEACONRIES.map((a) => <option key={a}>{a}</option>)}
-        </select>
-        <input className="border rounded px-3 py-2" name="church" placeholder="Church"
-               value={form.church ?? ""} onChange={set} />
-        <input className="border rounded px-3 py-2" name="occupation" placeholder="Occupation"
-               value={form.occupation ?? ""} onChange={set} />
-        <input className="border rounded px-3 py-2" name="educational_qualification"
-               placeholder="Highest qualification"
-               value={form.educational_qualification ?? ""} onChange={set} />
-      </div>
-      <input className="border rounded px-3 py-2 w-full mt-3" name="address" placeholder="Address"
-             value={form.address ?? ""} onChange={set} />
-
-      {message && <p className="text-sm mt-3">{message}</p>}
-
-      <button onClick={save} disabled={busy}
-              className="bg-[#800000] text-white px-5 py-2 rounded mt-4">
-        {busy ? "Saving…" : "Save changes"}
-      </button>
-
-      {/* registrations */}
-      <h2 className="text-xl font-semibold mt-10 mb-3">My programmes</h2>
-      {registrations.length === 0 ? (
-        <p className="text-gray-600">
-          You haven't registered for anything yet. <Link className="underline" to="/programmes">See what's on</Link>.
-        </p>
-      ) : (
-        <div className="grid gap-2">
-          {registrations.map((r) => (
-            <Link key={r.id} to={`/programmes/${r.programmes?.slug}`}
-                  className="border rounded p-3 flex justify-between items-center">
-              <span>
-                <strong>{r.programmes?.title}</strong>
-                {r.programmes?.starts_at &&
-                  <span className="text-gray-500 text-sm">
-                    {" · "}{new Date(r.programmes.starts_at).toLocaleDateString("en-NG")}
-                  </span>}
-              </span>
-              <span className={`text-xs px-2 py-1 rounded ${
-                r.payment_status === "pending"
-                  ? "bg-yellow-100 text-yellow-800" : "bg-green-100 text-green-800"}`}>
-                {r.payment_status === "pending" ? "Payment due" : "Confirmed"}
-              </span>
-            </Link>
-          ))}
-        </div>
-      )}
-
-      {/* orders */}
-      <h2 className="text-xl font-semibold mt-10 mb-3">My orders</h2>
-      {orders.length === 0 ? (
-        <p className="text-gray-600">
-          Nothing ordered yet. <Link className="underline" to="/store">Visit the store</Link>.
-        </p>
-      ) : (
-        <div className="grid gap-2">
-          {orders.map((o) => (
-            <Link key={o.id} to={`/orders/${o.id}`}
-                  className="border rounded p-3 flex justify-between">
-              <span>{o.order_number} · {new Date(o.created_at).toLocaleDateString("en-NG")}</span>
-              <span>{naira(o.total_naira)} · {o.status}</span>
-            </Link>
-          ))}
-        </div>
-      )}
+      <SiteFooter />
     </div>
   );
 }
