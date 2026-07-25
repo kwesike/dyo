@@ -17,14 +17,14 @@ export const ARCHDEACONRIES = [
 
 /** Merch collection points — cheaper than delivery and the usual choice. */
 export const PICKUP_POINTS = [
-  "Cathedral Church office",
-  "Diocesan Youth Office, Yemetu",
+  "Cathedral of St Peter's, Aremo",
+  "St Stephen Anglican Church, Alegongo",
   "Collect at the programme venue",
 ] as const;
 
 export const DELIVERY_FEE_NAIRA = {
   pickup: 0,
-  ibadan: 2000,
+  residence_within_ibadan: 2000,
   outside_ibadan: 4500,
 } as const;
 
