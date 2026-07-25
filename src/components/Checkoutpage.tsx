@@ -9,7 +9,7 @@ import Navbar from "./Navbar";
 import SiteFooter from "./Sitefooter";
 import "./Store.css";
 
-type Delivery = "pickup" | "ibadan" | "outside_ibadan";
+type Delivery = "pickup" | "residence_within_ibadan" | "outside_ibadan";
 
 export default function CheckoutPage() {
   const navigate = useNavigate();
@@ -171,7 +171,7 @@ export default function CheckoutPage() {
             <div className="checkout-choices">
               {([
                 ["pickup", "Collect it", "Free"],
-                ["ibadan", "Deliver in Ibadan", naira(DELIVERY_FEE_NAIRA.ibadan)],
+                ["residence_within_ibadan", "Deliver in Ibadan", naira(DELIVERY_FEE_NAIRA.residence_within_ibadan)],
                 ["outside_ibadan", "Deliver outside Ibadan", naira(DELIVERY_FEE_NAIRA.outside_ibadan)],
               ] as [Delivery, string, string][]).map(([value, label, price]) => (
                 <button key={value}
