@@ -12,7 +12,7 @@ interface ExtraField {
 const BLANK = {
   title: "", tagline: "", description: "", venue: "",
   starts_at: "", ends_at: "", registration_closes_at: "",
-  fee_naira: 0, capacity: "", is_published: false,
+  is_free: true, fee_naira: 0, capacity: "", is_published: false,
   banner_url: "", flyer_url: "", attending_template_url: "",
   extra_fields: [] as ExtraField[],
 };
@@ -25,6 +25,7 @@ export default function AdminProgrammes() {
   const [form, setForm] = useState({ ...BLANK });
   const [uploading, setUploading] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [message, setMessage] = useState("");
 
   useEffect(() => { void load(); }, []);
@@ -61,6 +62,8 @@ export default function AdminProgrammes() {
       starts_at: p.starts_at?.slice(0, 16) ?? "",
       ends_at: p.ends_at?.slice(0, 16) ?? "",
       registration_closes_at: p.registration_closes_at?.slice(0, 16) ?? "",
+      // A programme is free when its fee is zero — derive the toggle from the data.
+      is_free: !(p.fee_naira > 0),
       fee_naira: p.fee_naira ?? 0,
       capacity: p.capacity ?? "",
       is_published: p.is_published,
@@ -73,6 +76,11 @@ export default function AdminProgrammes() {
 
   async function save() {
     if (!form.title.trim()) return setMessage("Give the programme a title.");
+    // If it's paid, insist on an actual amount rather than saving a silent zero.
+    if (!form.is_free && (!form.fee_naira || Number(form.fee_naira) <= 0)) {
+      return setMessage("Enter the fee, or switch it to Free.");
+    }
+
     setSaving(true);
     setMessage("");
 
@@ -85,7 +93,8 @@ export default function AdminProgrammes() {
       starts_at: form.starts_at || null,
       ends_at: form.ends_at || null,
       registration_closes_at: form.registration_closes_at || null,
-      fee_naira: Number(form.fee_naira) || 0,
+      // Free always writes 0; paid writes the entered amount.
+      fee_naira: form.is_free ? 0 : Number(form.fee_naira) || 0,
       capacity: form.capacity === "" ? null : Number(form.capacity),
       is_published: form.is_published,
       banner_url: form.banner_url || null,
@@ -120,6 +129,39 @@ export default function AdminProgrammes() {
     void load();
   }
 
+  /**
+   * Hard delete, as chosen. A programme with registrations can't be removed
+   * while those rows point at it (foreign key), so we clear them first — but
+   * only after a confirm that says exactly how many will be lost, since this
+   * erases who attended and what they paid.
+   */
+  async function remove(p: any) {
+    const count = stats[p.id]?.total_registered ?? 0;
+    const warning = count > 0
+      ? `Delete "${p.title}"? This also permanently removes ${count} registration${count === 1 ? "" : "s"} and any payment records for them. This cannot be undone.`
+      : `Delete "${p.title}"? This cannot be undone.`;
+
+    if (!confirm(warning)) return;
+
+    setDeletingId(p.id);
+    setMessage("");
+
+    // Clear children first, then the programme itself.
+    await supabase.from("programme_registrations").delete().eq("programme_id", p.id);
+    const { error } = await supabase.from("programmes").delete().eq("id", p.id);
+
+    setDeletingId(null);
+
+    if (error) {
+      setMessage("Couldn't delete that — it may still be linked to store items. Unlink those first.");
+      return;
+    }
+
+    setMessage(`"${p.title}" was deleted.`);
+    if (editing === p.id) { setEditing(null); setForm({ ...BLANK }); }
+    void load();
+  }
+
   /* ---- custom question builder ---- */
   const addField = () =>
     set("extra_fields", [...form.extra_fields,
@@ -151,9 +193,49 @@ export default function AdminProgrammes() {
                  value={form.tagline} onChange={(e) => set("tagline", e.target.value)} />
           <input className="border rounded px-3 py-2" placeholder="Venue"
                  value={form.venue} onChange={(e) => set("venue", e.target.value)} />
-          <input className="border rounded px-3 py-2" type="number" placeholder="Fee in naira (0 = free)"
-                 value={form.fee_naira} onChange={(e) => set("fee_naira", e.target.value)} />
+          <input className="border rounded px-3 py-2" type="number"
+                 placeholder="Capacity (leave blank for unlimited)"
+                 value={form.capacity} onChange={(e) => set("capacity", e.target.value)} />
+        </div>
 
+        {/* ---- fee: free or an amount ---- */}
+        <div className="border rounded-lg p-4 mt-3 bg-gray-50">
+          <p className="text-sm font-medium mb-2">Does it cost anything to attend?</p>
+          <div className="flex gap-2">
+            <button type="button"
+                    onClick={() => { set("is_free", true); set("fee_naira", 0); }}
+                    className={`px-4 py-2 rounded text-sm border ${
+                      form.is_free ? "bg-[#800000] text-white border-[#800000]"
+                                   : "bg-white text-gray-700"}`}>
+              Free to attend
+            </button>
+            <button type="button"
+                    onClick={() => set("is_free", false)}
+                    className={`px-4 py-2 rounded text-sm border ${
+                      !form.is_free ? "bg-[#800000] text-white border-[#800000]"
+                                    : "bg-white text-gray-700"}`}>
+              There's a fee
+            </button>
+          </div>
+
+          {!form.is_free && (
+            <div className="mt-3">
+              <label className="text-sm text-gray-600 block mb-1">Fee in naira</label>
+              <div className="flex items-center gap-2">
+                <span className="text-lg text-gray-500">₦</span>
+                <input className="border rounded px-3 py-2 w-40" type="number" min={1}
+                       placeholder="e.g. 5000" autoFocus
+                       value={form.fee_naira || ""}
+                       onChange={(e) => set("fee_naira", e.target.value)} />
+              </div>
+              <p className="text-xs text-gray-500 mt-1">
+                Members pay this through the site when they register.
+              </p>
+            </div>
+          )}
+        </div>
+
+        <div className="grid md:grid-cols-3 gap-3 mt-3">
           <label className="text-sm text-gray-600">Starts
             <input className="border rounded px-3 py-2 w-full" type="datetime-local"
                    value={form.starts_at} onChange={(e) => set("starts_at", e.target.value)} />
@@ -167,9 +249,6 @@ export default function AdminProgrammes() {
                    value={form.registration_closes_at}
                    onChange={(e) => set("registration_closes_at", e.target.value)} />
           </label>
-          <input className="border rounded px-3 py-2" type="number"
-                 placeholder="Capacity (leave blank for unlimited)"
-                 value={form.capacity} onChange={(e) => set("capacity", e.target.value)} />
         </div>
 
         <textarea className="border rounded px-3 py-2 w-full mt-3" rows={4}
@@ -286,6 +365,10 @@ export default function AdminProgrammes() {
               <a className="underline text-sm" href={`/admin/programmes/${p.id}/registrations`}>
                 Registrations
               </a>
+              <button onClick={() => remove(p)} disabled={deletingId === p.id}
+                      className="text-red-600 text-sm">
+                {deletingId === p.id ? "Deleting…" : "Delete"}
+              </button>
             </div>
           );
         })}
