@@ -9,7 +9,7 @@ const FLW_SCRIPT = "https://checkout.flutterwave.com/v3.js";
 /** Loads the Flutterwave script once, no matter how many pages ask for it. */
 let scriptPromise: Promise<void> | null = null;
 export function loadFlutterwave(): Promise<void> {
-  if (window.FlutterwaveCheckout) return Promise.resolve();
+  if (typeof window.FlutterwaveCheckout === "function") return Promise.resolve();
   if (scriptPromise) return scriptPromise;
 
   scriptPromise = new Promise((resolve, reject) => {
@@ -25,7 +25,7 @@ export function loadFlutterwave(): Promise<void> {
   return scriptPromise;
 }
 
-export type PaymentPurpose = "order" | "registration" | "donation";
+export type PaymentPurpose = "order" | "registration" | "donation" | "sponsorship";
 
 export interface PayArgs {
   purpose: PaymentPurpose;

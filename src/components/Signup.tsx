@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
+import { uploadPublicFile } from "../lib/Storage";
 import logo from "../assets/LOGO.jpeg";
 import { ARCHDEACONRIES } from "../lib/Constants";
 import "./Auth.css";
@@ -40,6 +41,8 @@ export default function Signup() {
     date_of_birth: "", archdeaconry: "", church: "", occupation: "",
     educational_qualification: "", address: "",
   });
+  const [photoFile, setPhotoFile] = useState<File | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string>("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
@@ -57,12 +60,35 @@ export default function Signup() {
     setBusy(true);
 
     try {
+      // Upload the photo first (if any) so its URL rides along in signup
+      // metadata and the profile trigger picks it up.
+      let photoUrl = "";
+      if (photoFile) {
+        try {
+          const key = form.email.trim().toLowerCase().replace(/[^a-z0-9]/g, "-");
+          photoUrl = await uploadPublicFile("member-photos", photoFile, `signup/${key}`);
+        } catch {
+          // Photo is optional — press on without it rather than block signup.
+        }
+      }
+
       const { data, error: signUpError } = await withTimeout(
         supabase.auth.signUp({
           email: form.email.trim().toLowerCase(),
           password: form.password,
           options: {
-            data: { full_name: form.full_name.trim(), phone: form.phone.trim() },
+            data: {
+              full_name: form.full_name.trim(),
+              phone: form.phone.trim(),
+              gender: form.gender,
+              date_of_birth: form.date_of_birth || "",
+              archdeaconry: form.archdeaconry,
+              church: form.church.trim(),
+              occupation: form.occupation.trim(),
+              educational_qualification: form.educational_qualification.trim(),
+              address: form.address.trim(),
+              photo_url: photoUrl,
+            },
             emailRedirectTo: `${window.location.origin}/login`,
           },
         }),
@@ -84,27 +110,9 @@ export default function Signup() {
        * signing up again with the same email will just be rejected. Send
        * them on and let them finish their details in /account.
        */
-      if (data.user) {
-        try {
-          await withTimeout(
-            supabase.from("profiles").update({
-              full_name: form.full_name.trim(),
-              gender: form.gender,
-              date_of_birth: form.date_of_birth || null,
-              archdeaconry: form.archdeaconry,
-              church: form.church.trim(),
-              occupation: form.occupation.trim(),
-              educational_qualification: form.educational_qualification.trim(),
-              phone: form.phone.trim(),
-              address: form.address.trim(),
-              email: form.email.trim().toLowerCase(),
-            }).eq("id", data.user.id),
-            SIGNUP_TIMEOUT_MS,
-          );
-        } catch {
-          // Ignored on purpose — see the note above.
-        }
-      }
+      // The profile is filled by the handle_new_user trigger from the signup
+      // metadata above — no client-side profile write needed, and crucially
+      // none that would fail against RLS before the session exists.
 
       if (!data.session) {
         navigate("/check-your-email", { state: { email: form.email } });
@@ -128,6 +136,27 @@ export default function Signup() {
       <form className="auth-card" onSubmit={submit}>
         <img src={logo} alt="Diocesan Youth Organization" className="auth-logo" />
         <h1>Create your account</h1>
+
+        {/* Profile photo — this becomes the face on attendance cards, so
+            capturing it now saves a trip to the account page later. */}
+        <div className="signup-photo">
+          {photoPreview ? (
+            <img src={photoPreview} alt="" className="signup-photo-preview" />
+          ) : (
+            <div className="signup-photo-blank">Add a photo</div>
+          )}
+          <label className="signup-photo-btn">
+            {photoPreview ? "Change photo" : "Upload a photo"}
+            <input type="file" accept="image/*" hidden
+                   onChange={(e) => {
+                     const f = e.target.files?.[0];
+                     if (f) {
+                       setPhotoFile(f);
+                       setPhotoPreview(URL.createObjectURL(f));
+                     }
+                   }} />
+          </label>
+        </div>
         <p className="auth-sub">
           Register once. After this, signing up for a programme takes seconds and
           your attendance card is generated for you.

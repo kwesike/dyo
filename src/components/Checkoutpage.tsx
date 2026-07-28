@@ -19,7 +19,7 @@ export default function CheckoutPage() {
   const [delivery, setDelivery] = useState<Delivery>("pickup");
   const [form, setForm] = useState({
     full_name: "", email: "", phone: "",
-    archdeaconry: "", pickup_point: PICKUP_POINTS[0], delivery_address: "", note: "",
+    archdeaconry: "", pickup_point: "", delivery_address: "", note: "",
   });
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -61,6 +61,10 @@ export default function CheckoutPage() {
 
     if (!form.full_name || !form.email || !form.phone) {
       return setError("We need your name, email and phone to reach you about this order.");
+    }
+    if (delivery === "pickup" && !form.pickup_point) {
+      setError("Please select your pickup point so we know where to send your order.");
+      return;
     }
     if (delivery !== "pickup" && !form.delivery_address.trim()) {
       return setError("Add the address we should deliver to.");
@@ -193,9 +197,19 @@ export default function CheckoutPage() {
             </select>
 
             {delivery === "pickup" ? (
-              <select name="pickup_point" value={form.pickup_point} onChange={set}>
-                {PICKUP_POINTS.map((p) => <option key={p}>{p}</option>)}
-              </select>
+              <div className="checkout-pickup">
+                <label className="checkout-pickup-label">
+                  Where will you collect your order? <span className="req">*</span>
+                </label>
+                <p className="checkout-pickup-hint">
+                  Choose the pickup point nearest to you — your items will be waiting there.
+                </p>
+                <select name="pickup_point" value={form.pickup_point} onChange={set}
+                        className={!form.pickup_point ? "needs-choice" : ""}>
+                  <option value="">— Select your pickup point —</option>
+                  {PICKUP_POINTS.map((p) => <option key={p} value={p}>{p}</option>)}
+                </select>
+              </div>
             ) : (
               <textarea name="delivery_address" rows={3}
                         placeholder="Delivery address — street, area, landmark"

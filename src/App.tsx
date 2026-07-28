@@ -36,6 +36,8 @@ import OrderReceipt from "./components/Orderreceipt";
 
 /* ---------- admin ---------- */
 import AdminLayout from "./components/Adminlayout";
+import AdminDonations from "./components/Admindonation";
+import AdminAudit from "./components/Adminaudit";
 import AdminHome from "./components/Adminhome";
 import AdminProgrammes from "./components/Adminprogrammes";
 import AdminRegistrations from "./components/Adminregistrations";
@@ -43,6 +45,7 @@ import AdminRegistrationsIndex from "./components/Adminregistrationindex";
 import AdminProducts from "./components/Adminproducts";
 import AdminOrders from "./components/Adminorders";
 import AdminAnnouncements from "./components/Adminannouncements";
+import AdminReceipts from "./components/Adminreceipts";
 import AdminLeadership from "./components/Adminleadership";
 import AdminCarousel from "./components/Admincarousel";
 import AdminGallery from "./components/Admingallery";
@@ -54,6 +57,7 @@ import AdminMembers from "./components/Adminmembers";
 import AdminDashboard from "./components/AdminDashboard";
 import VoucherGenerator from "./components/VoucherGenerator";
 import AdminTags from "./components/AdminTags";
+import SponsorshipReceipt from "./components/Sponsorshipreceipt";
 
 import "./components/Layout.css";
 
@@ -112,6 +116,8 @@ export default function App() {
             <Route path="/payment/:id" element={<PaymentPage />} />
             <Route path="/success/:id" element={<SuccessPage />} />
             <Route path="/success-donation/:id" element={<SuccessDonation />} />
+            <Route path="/sponsorship/:id" element={<SponsorshipReceipt />} />
+            
 
             {/* ============ ADMIN ============ */}
             <Route path="/admin" element={<RequireAdmin><AdminLayout /></RequireAdmin>}>
@@ -131,6 +137,9 @@ export default function App() {
               <Route path="gallery" element={<RequireSection section="gallery"><AdminGallery /></RequireSection>} />
               <Route path="blog" element={<RequireSection section="blog"><AdminBlog /></RequireSection>} />
               <Route path="leadership" element={<RequireSection section="leadership"><AdminLeadership /></RequireSection>} />
+              <Route path="audit" element={<RequireSection section="audit"><AdminAudit /></RequireSection>} />
+              <Route path="donations" element={<RequireSection section="donations"><AdminDonations /></RequireSection>} />
+              <Route path="receipts" element={<RequireSection section="receipts"><AdminReceipts /></RequireSection>} />
 
               <Route path="members" element={<RequireSection section="members"><AdminMembers /></RequireSection>} />
               <Route path="access" element={<AdminAccess />} />

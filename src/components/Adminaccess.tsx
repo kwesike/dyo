@@ -2,7 +2,6 @@ import { useEffect, useMemo, useState } from "react";
 import type { ReactNode } from "react";
 import { supabase } from "../lib/supabaseClient";
 import { useAuth, ADMIN_SECTIONS } from "./Authcontext";
-import { ARCHDEACONRIES } from "../lib/Constants";
 
 /**
  * Access control — super admin only.
@@ -29,9 +28,11 @@ interface Person {
 
 const SECTION_LABELS: Record<string, string> = {
   programmes: "Programmes", registrations: "Registrations", store: "Store items",
-  orders: "Orders", vouchers: "Vouchers", tags: "Tags", announcements: "Flyers & updates",
+  orders: "Orders", donations: "Donations", receipts: "Receipts", vouchers: "Vouchers", tags: "Tags", announcements: "Flyers & updates",
   gallery: "Gallery", blog: "Blog", carousel: "Slideshow", leadership: "Leadership",
   archdeaconries: "All archdeaconries", pages: "Custom pages", members: "Members",
+  overview: "Overview (dashboard)",
+  audit: "Audit trail",
 };
 
 export default function AdminAccess() {
@@ -41,10 +42,15 @@ export default function AdminAccess() {
   const [editing, setEditing] = useState<Person | null>(null);
   const [message, setMessage] = useState("");
   const [saving, setSaving] = useState(false);
+  const [archdeaconries, setArchdeaconries] = useState<{ slug: string; name: string }[]>([]);
 
   useEffect(() => { void load(); }, []);
 
   async function load() {
+    const { data: archs } = await supabase
+      .from("archdeaconries").select("slug, name").order("sort_order");
+    setArchdeaconries(archs ?? []);
+
     const { data } = await supabase
       .from("profiles")
       .select("id, full_name, email, photo_url, role, managed_archdeaconry, admin_sections")
@@ -136,7 +142,7 @@ export default function AdminAccess() {
       return <span className="a-pill" style={{ background: "#efe3fb", color: "#5b2a86" }}>Super admin</span>;
     if (p.role === "archdeaconry_admin")
       return <span className="a-pill" style={{ background: "#e3eefb", color: "#1e4b86" }}>
-        {p.managed_archdeaconry ?? "Archdeaconry"} admin
+        {archdeaconries.find((a) => a.slug === p.managed_archdeaconry)?.name ?? p.managed_archdeaconry ?? "Archdeaconry"} admin
       </span>;
     if (p.role === "admin")
       return <span className="a-pill a-pill--live">
@@ -229,8 +235,8 @@ export default function AdminAccess() {
                             onChange={(e) => setEditing({ ...editing, managed_archdeaconry: e.target.value })}
                             style={{ width: "100%" }}>
                       <option value="">Choose one</option>
-                      {ARCHDEACONRIES.filter((a) => a !== "Non-Anglican").map((a) => (
-                        <option key={a} value={a}>{a}</option>
+                      {archdeaconries.map((a) => (
+                        <option key={a.slug} value={a.slug}>{a.name}</option>
                       ))}
                     </select>
                   </>
@@ -268,7 +274,7 @@ export default function AdminAccess() {
                   <button className="a-btn a-btn--quiet" onClick={() => setEditing(null)}>
                     Cancel
                   </button>
-                  {editing.id !== me?.id && editing.role !== "super_admin" && (
+                  {editing.id !== me?.id && (
                     <button className="a-btn a-btn--danger"
                             style={{ marginLeft: "auto" }}
                             disabled={saving}

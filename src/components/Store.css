@@ -343,3 +343,29 @@
   .store-card-image img { transition: none; }
   .store-card:hover .store-card-image img { transform: none; }
 }
+
+
+/* back links added when the shared header went in */
+.checkout-back, .pg-back {
+  display: inline-block;
+  margin-bottom: 14px;
+  color: #6b5f5f;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+.checkout-back:hover, .pg-back:hover { color: #800000; }
+
+
+/* Pickup point — make the choice unmistakable */
+.checkout-pickup { margin: 6px 0 4px; }
+.checkout-pickup-label {
+  display: block; font-weight: 600; font-size: 0.95rem; margin-bottom: 2px;
+}
+.checkout-pickup-label .req { color: #b00020; }
+.checkout-pickup-hint {
+  font-size: 0.83rem; color: #6b5f5f; margin: 0 0 8px;
+}
+.checkout-pickup select.needs-choice {
+  border-color: #b00020;
+  background: #fff8f8;
+}

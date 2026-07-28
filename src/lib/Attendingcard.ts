@@ -251,45 +251,43 @@ export async function composeAttendingCard(opts: {
 
   // 3. Split the panel: portrait above, details below.
   const hasDetails = !!(opts.details.church || opts.details.archdeaconry);
-  const textShare = hasDetails ? 0.30 : 0.22;
+  const textShare = hasDetails ? 0.34 : 0.20;  // reserve clear space below the photo for details
   const textHeight = inner.h * textShare;
   const photoHeight = inner.h - textHeight;
 
-  const photoSide = Math.min(inner.w, photoHeight);
-  const photoX = inner.x + (inner.w - photoSide) / 2;
+  // The photo fills the panel's WIDTH and the upper (photo) portion of its
+  // height — a portrait rectangle, not a circle. The lower part is left clear
+  // for the name and details. A small radius softens the corners without
+  // cropping the face the way a circle does.
+  const photoW = inner.w;
+  const photoH = photoHeight;
+  const photoX = inner.x;
   const photoY = inner.y;
+  const radius = Math.min(photoW, photoH) * 0.05;
 
-  // 4. The portrait.
   ctx.save();
   ctx.beginPath();
-  if (cfg.photo.shape === "square") {
-    const r = photoSide * 0.06;
-    ctx.roundRect(photoX, photoY, photoSide, photoSide, r);
-  } else {
-    ctx.arc(photoX + photoSide / 2, photoY + photoSide / 2, photoSide / 2, 0, Math.PI * 2);
-  }
+  ctx.roundRect(photoX, photoY, photoW, photoH, radius);
   ctx.clip();
-  drawCover(ctx, photo, photoX, photoY, photoSide, photoSide);
+  drawCover(ctx, photo, photoX, photoY, photoW, photoH);
   ctx.restore();
 
-  // A thin ring lifts the portrait off a white panel.
+  // A thin frame lifts the photo off a white panel.
   ctx.save();
   ctx.strokeStyle = "rgba(128, 0, 0, 0.85)";
-  ctx.lineWidth = Math.max(2, photoSide * 0.012);
+  ctx.lineWidth = Math.max(2, Math.min(photoW, photoH) * 0.01);
   ctx.beginPath();
-  if (cfg.photo.shape === "square") {
-    ctx.roundRect(photoX, photoY, photoSide, photoSide, photoSide * 0.06);
-  } else {
-    ctx.arc(photoX + photoSide / 2, photoY + photoSide / 2, photoSide / 2, 0, Math.PI * 2);
-  }
+  ctx.roundRect(photoX, photoY, photoW, photoH, radius);
   ctx.stroke();
   ctx.restore();
+
+  const photoSide = photoH; // details block starts below the photo
 
   // 5. The details, underneath.
   const textTop = photoY + photoSide + inner.h * 0.035;
   const light = isLightRegion(ctx, inner.x, textTop, inner.w, textHeight);
   const ink = light ? "#3a0a0a" : "#ffffff";
-  const inkSoft = light ? "rgba(58,10,10,0.72)" : "rgba(255,255,255,0.85)";
+  //const inkSoft = light ? "rgba(58,10,10,0.72)" : "rgba(255,255,255,0.85)";
 
   ctx.textAlign = "center";
   ctx.textBaseline = "top";
@@ -306,7 +304,7 @@ export async function composeAttendingCard(opts: {
   const nameSize = fitText(ctx, opts.details.name.toUpperCase(), inner.w,
                            textHeight * (hasDetails ? 0.40 : 0.62));
   ctx.fillStyle = ink;
-  ctx.font = `700 ${nameSize}px Georgia, 'Times New Roman', serif`;
+  ctx.font = `800 ${nameSize}px Georgia, 'Times New Roman', serif`;
   ctx.fillText(opts.details.name.toUpperCase(), centreX, cursor);
   cursor += nameSize * 1.22;
 
@@ -326,14 +324,14 @@ export async function composeAttendingCard(opts: {
     const lines = [opts.details.church, opts.details.archdeaconry]
       .filter(Boolean) as string[];
 
-    const detailSize = Math.max(10, nameSize * 0.52);
-    ctx.fillStyle = inkSoft;
+    const detailSize = Math.max(10, nameSize * 0.56);
+    ctx.fillStyle = ink;
 
     lines.forEach((line, i) => {
       const label = i === 1 ? `${line} Archdeaconry` : line;
-      const size = fitText(ctx, label, inner.w * 0.94, detailSize, 500,
+      const size = fitText(ctx, label, inner.w * 0.94, detailSize, 700,
                            "Georgia, 'Times New Roman', serif");
-      ctx.font = `500 ${size}px Georgia, 'Times New Roman', serif`;
+      ctx.font = `700 ${size}px Georgia, 'Times New Roman', serif`;
       ctx.fillText(label, centreX, cursor);
       cursor += size * 1.28;
     });

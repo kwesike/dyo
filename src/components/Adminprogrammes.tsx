@@ -12,8 +12,8 @@ interface ExtraField {
 const BLANK = {
   title: "", tagline: "", description: "", venue: "",
   starts_at: "", ends_at: "", registration_closes_at: "",
-  is_free: true, fee_naira: 0, capacity: "", is_published: false,
-  banner_url: "", flyer_url: "", attending_template_url: "",
+  is_free: true, fee_naira: 0, access_code: "", capacity: "", is_published: false,
+  banner_url: "", flyer_url: "", attending_template_url: "", attending_tag_url: "",
   extra_fields: [] as ExtraField[],
 };
 
@@ -41,7 +41,7 @@ export default function AdminProgrammes() {
 
   const set = (key: string, value: unknown) => setForm((f) => ({ ...f, [key]: value }));
 
-  async function handleUpload(field: "banner_url" | "flyer_url" | "attending_template_url",
+  async function handleUpload(field: "banner_url" | "flyer_url" | "attending_template_url" | "attending_tag_url",
                               file: File | undefined) {
     if (!file) return;
     setUploading(field);
@@ -65,10 +65,12 @@ export default function AdminProgrammes() {
       // A programme is free when its fee is zero — derive the toggle from the data.
       is_free: !(p.fee_naira > 0),
       fee_naira: p.fee_naira ?? 0,
+      access_code: p.access_code ?? "",
       capacity: p.capacity ?? "",
       is_published: p.is_published,
       banner_url: p.banner_url ?? "", flyer_url: p.flyer_url ?? "",
       attending_template_url: p.attending_template_url ?? "",
+      attending_tag_url: p.attending_tag_url ?? "",
       extra_fields: p.extra_fields ?? [],
     });
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -95,11 +97,13 @@ export default function AdminProgrammes() {
       registration_closes_at: form.registration_closes_at || null,
       // Free always writes 0; paid writes the entered amount.
       fee_naira: form.is_free ? 0 : Number(form.fee_naira) || 0,
+      access_code: form.is_free ? null : (form.access_code.trim() || null),
       capacity: form.capacity === "" ? null : Number(form.capacity),
       is_published: form.is_published,
       banner_url: form.banner_url || null,
       flyer_url: form.flyer_url || null,
       attending_template_url: form.attending_template_url || null,
+      attending_tag_url: form.attending_tag_url || null,
       extra_fields: form.extra_fields,
       created_by: profile?.id,
     };
@@ -231,6 +235,19 @@ export default function AdminProgrammes() {
               <p className="text-xs text-gray-500 mt-1">
                 Members pay this through the site when they register.
               </p>
+
+              <label className="text-sm text-gray-600 block mb-1 mt-4">
+                Access code for archdeaconry / parish / church payments
+              </label>
+              <input className="border rounded px-3 py-2 w-full max-w-xs"
+                     placeholder="e.g. GLORY2026"
+                     value={form.access_code}
+                     onChange={(e) => set("access_code", e.target.value)} />
+              <p className="text-xs text-gray-500 mt-1">
+                You choose this. A church, parish or archdeaconry enters it on the
+                payment page to pay for their members in bulk. Share it only with
+                the people meant to pay.
+              </p>
             </div>
           )}
         </div>
@@ -257,12 +274,21 @@ export default function AdminProgrammes() {
 
         {/* uploads */}
         <div className="grid md:grid-cols-3 gap-4 mt-5">
-          {([
-            ["banner_url", "Wide banner", "Shows across the top of the programme page."],
-            ["flyer_url", "Programme flyer", "The poster people share on WhatsApp."],
-            ["attending_template_url", "\u201CI will be attending\u201D frame",
-             "Square PNG with a transparent window where the face goes."],
-          ] as const).map(([field, label, hint]) => (
+          {(() => {
+            type UF = "banner_url" | "flyer_url" | "attending_template_url" | "attending_tag_url";
+            const uploads: [UF, string, string][] = [
+              ["banner_url", "Wide banner", "Shows across the top of the programme page."],
+              ["flyer_url", "Programme flyer", "The poster people share on WhatsApp."],
+              ["attending_template_url", "\u201CI will be attending\u201D card",
+               "Square PNG with a transparent window where the face goes. Everyone gets this."],
+            ];
+            // Paid programmes get a 4th: the printable attendance tag.
+            if (!form.is_free) {
+              uploads.push(["attending_tag_url", "Attendance tag (paid only)",
+                "The printable tag for verified attendees. Same face-window design as the card."]);
+            }
+            return uploads;
+          })().map(([field, label, hint]) => (
             <div key={field} className="border rounded p-3">
               <p className="font-medium text-sm">{label}</p>
               <p className="text-xs text-gray-500 mb-2">{hint}</p>
