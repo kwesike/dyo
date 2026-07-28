@@ -58,6 +58,8 @@ import AdminDashboard from "./components/AdminDashboard";
 import VoucherGenerator from "./components/VoucherGenerator";
 import AdminTags from "./components/AdminTags";
 import SponsorshipReceipt from "./components/Sponsorshipreceipt";
+import BodyPayment from "./components/Bodypayment";
+import BodyReceipt from "./components/Bodyreceipt";
 
 import "./components/Layout.css";
 
@@ -117,7 +119,8 @@ export default function App() {
             <Route path="/success/:id" element={<SuccessPage />} />
             <Route path="/success-donation/:id" element={<SuccessDonation />} />
             <Route path="/sponsorship/:id" element={<SponsorshipReceipt />} />
-            
+            <Route path="/programmes/:slug/body-payment" element={<BodyPayment />} />
+            <Route path="/body-receipt/:id" element={<BodyReceipt />} />
 
             {/* ============ ADMIN ============ */}
             <Route path="/admin" element={<RequireAdmin><AdminLayout /></RequireAdmin>}>

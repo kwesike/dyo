@@ -182,11 +182,10 @@ export default function ProgrammeDetail() {
 
     setBusy(false);
 
-    const _status = (result as any)?.status as string | undefined;
-    if (_status === "success" || _status === "already_verified") {
+    if (result.status === "success") {
       navigate(`/sponsorship/${sp.id}`);
-    } else if (_status === "cancelled") {
-      setNotice("Payment cancelled.");
+    } else if (result.status === "closed") {
+      setNotice("Payment closed.");
     } else {
       // Webhook will settle it; send them to the receipt which polls.
       navigate(`/sponsorship/${sp.id}`);
@@ -522,6 +521,14 @@ export default function ProgrammeDetail() {
                       onClick={() => setSponsorOpen(true)} disabled={busy}>
                 Sponsor people for this programme
               </button>
+
+              <p className="pg-note" style={{ marginTop: 16 }}>
+                Paying on behalf of an archdeaconry, parish or church?
+              </p>
+              <Link className="pg-button pg-button--quiet"
+                    to={`/programmes/${slug}/body-payment`}>
+                Archdeaconry / parish / church payment
+              </Link>
             </div>
           )}
 

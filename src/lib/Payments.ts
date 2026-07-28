@@ -25,7 +25,7 @@ export function loadFlutterwave(): Promise<void> {
   return scriptPromise;
 }
 
-export type PaymentPurpose = "order" | "registration" | "donation" | "sponsorship";
+export type PaymentPurpose = "order" | "registration" | "donation" | "sponsorship"|"body_payment";
 
 export interface PayArgs {
   purpose: PaymentPurpose;
