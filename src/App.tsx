@@ -60,6 +60,10 @@ import AdminTags from "./components/AdminTags";
 import SponsorshipReceipt from "./components/Sponsorshipreceipt";
 import BodyPayment from "./components/Bodypayment";
 import BodyReceipt from "./components/Bodyreceipt";
+import ItemSponsorshipReceipt from "./components/Itemsponsorshipreceipt";
+import AdminDraws from "./components/Admindraws";
+import Luckydrawwidget from "./components/Luckydrawwidget";
+import ClaimPrize from "./components/Claimprize";
 
 import "./components/Layout.css";
 
@@ -77,6 +81,7 @@ export default function App() {
     <Router>
       <AuthProvider>
         <CartProvider>
+          <Luckydrawwidget />
           <Routes>
             {/* ============ PUBLIC ============ */}
             <Route path="/" element={<HomePage />} />
@@ -113,6 +118,7 @@ export default function App() {
             <Route path="/store/:slug" element={<ProductDetail />} />
             <Route path="/cart" element={<RequireAuth><CheckoutPage /></RequireAuth>} />
             <Route path="/orders/:id" element={<OrderReceipt />} />
+            
 
             {/* ============ PAYMENT (legacy flow) ============ */}
             <Route path="/payment/:id" element={<PaymentPage />} />
@@ -121,6 +127,8 @@ export default function App() {
             <Route path="/sponsorship/:id" element={<SponsorshipReceipt />} />
             <Route path="/programmes/:slug/body-payment" element={<BodyPayment />} />
             <Route path="/body-receipt/:id" element={<BodyReceipt />} />
+            <Route path="/item-sponsorship/:id" element={<ItemSponsorshipReceipt />} />
+            <Route path="/claim/:drawId" element={<ClaimPrize />} />
 
             {/* ============ ADMIN ============ */}
             <Route path="/admin" element={<RequireAdmin><AdminLayout /></RequireAdmin>}>
@@ -148,6 +156,7 @@ export default function App() {
               <Route path="access" element={<AdminAccess />} />
               <Route path="my-archdeaconry" element={<MyArchdeaconry />} />
               <Route path="pages" element={<RequireSection section="pages"><AdminPages /></RequireSection>} />
+              <Route path="draws" element={<RequireSection section="draws"><AdminDraws /></RequireSection>} />
               <Route path="legacy" element={<AdminDashboard />} />
             </Route>
 

@@ -24,6 +24,9 @@ export default function CheckoutPage() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
 
+  // Store voucher (a sponsored item claimed at checkout).
+  const [voucherCode, setVoucherCode] = useState("");
+
   useEffect(() => {
     if (!profile) return;
     setForm((f) => ({
@@ -112,10 +115,36 @@ export default function CheckoutPage() {
       return setError("We couldn't save the items. Try again.");
     }
 
+    // If a store voucher was entered, apply it server-side. It zeroes the
+    // sponsored item and lowers the order's real total, so the amount the
+    // payment verifier checks matches what we charge.
+    let payable = total;
+    if (voucherCode.trim()) {
+      const { data: applied, error: vErr } = await supabase.rpc("apply_store_voucher", {
+        p_code: voucherCode.trim(),
+        p_order_id: order.id,
+      });
+      const res = Array.isArray(applied) ? applied[0] : applied;
+      if (vErr || !res?.ok) {
+        setBusy(false);
+        return setError(res?.reason ?? "That voucher couldn't be applied.");
+      }
+      payable = res.new_total;
+    }
+
+    // If the voucher covered everything, apply_store_voucher already settled
+    // the order server-side (the browser isn't allowed to mark it paid).
+    if (payable <= 0) {
+      setBusy(false);
+      clear();
+      navigate(`/orders/${order.id}`, { replace: true });
+      return;
+    }
+
     const result = await startPayment({
       purpose: "order",
       referenceId: order.id,
-      amountNaira: total,
+      amountNaira: payable,
       customer: { email: form.email, name: form.full_name, phone: form.phone },
       title: "Diocesan Youth Organization",
       description: `Order ${order.order_number}`,
@@ -227,6 +256,19 @@ export default function CheckoutPage() {
               <div><dt>Delivery</dt><dd>{deliveryFee ? naira(deliveryFee) : "Free"}</dd></div>
               <div className="checkout-total"><dt>Total</dt><dd>{naira(total)}</dd></div>
             </dl>
+
+            {/* Sponsored-item voucher — claimed here like a coupon. */}
+            <div className="checkout-voucher">
+              <label className="checkout-voucher-label">Have a sponsored-item voucher?</label>
+              <input className="checkout-voucher-input"
+                     placeholder="Enter voucher code"
+                     value={voucherCode}
+                     onChange={(e) => setVoucherCode(e.target.value.toUpperCase())} />
+              <p className="checkout-voucher-hint">
+                If someone sponsored an item for you, enter the code — that item
+                comes off your total. It must be in your cart.
+              </p>
+            </div>
 
             {error && <p className="checkout-error">{error}</p>}
 

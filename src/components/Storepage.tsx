@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
 import { naira } from "../lib/Payments";
 import { useCart } from "./Cartcontext";
+import SponsorItemButton from "./Sponsoritembutton";
 import Navbar from "./Navbar";
 import SiteFooter from "./Sitefooter";
 import "./Store.css";
@@ -88,16 +89,22 @@ export default function StorePage() {
       ) : (
         <div className="store-grid">
           {shown.map((p) => (
-            <Link key={p.id} to={`/store/${p.slug}`} className="store-card">
-              <div className="store-card-image">
-                {p.images[0]
-                  ? <img src={p.images[0]} alt={p.name} loading="lazy" />
-                  : <div className="store-card-placeholder">{p.name.slice(0, 1)}</div>}
-                {soldOut(p) && <span className="store-tag">Sold out</span>}
-              </div>
-              <h3>{p.name}</h3>
-              <p className="store-price">{naira(p.price_naira)}</p>
-            </Link>
+            <div key={p.id} className="store-card">
+              {/* The image + name + price stay a link to the product page. */}
+              <Link to={`/store/${p.slug}`} className="store-card-link">
+                <div className="store-card-image">
+                  {p.images[0]
+                    ? <img src={p.images[0]} alt={p.name} loading="lazy" />
+                    : <div className="store-card-placeholder">{p.name.slice(0, 1)}</div>}
+                  {soldOut(p) && <span className="store-tag">Sold out</span>}
+                </div>
+                <h3>{p.name}</h3>
+                <p className="store-price">{naira(p.price_naira)}</p>
+              </Link>
+
+              {/* Sponsor button sits outside the link so it acts on its own. */}
+              <SponsorItemButton product={{ id: p.id, name: p.name, price_naira: p.price_naira }} />
+            </div>
           ))}
         </div>
       )}

@@ -35,6 +35,7 @@ const ICONS = {
   audit: "M9 12h6m-6 4h6m2 4H7a2 2 0 01-2-2V5a2 2 0 012-2h5.5L19 8.5V18a2 2 0 01-2 2z",
   donations: "M12 8c-1.1 0-2 .9-2 2s.9 2 2 2 2 .9 2 2-.9 2-2 2m0-8V4m0 12v2m8-6a8 8 0 11-16 0 8 8 0 0116 0z",
   receipts: "M9 14l2 2 4-4m1 7H6a2 2 0 01-2-2V5a2 2 0 012-2h8l4 4v11a2 2 0 01-2 2z",
+  draws: "M12 2l2.4 7.4H22l-6 4.6 2.3 7.4-6.3-4.6L5.7 21.4 8 14 2 9.4h7.6z",
   programmes: "M8 2v4M16 2v4M3 9h18M5 5h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z",
   store: "M3 3h2l2.2 10.4a1.6 1.6 0 0 0 1.6 1.3h7.9a1.6 1.6 0 0 0 1.6-1.2L20.5 6H5.2M9.5 19.5h.01M16.5 19.5h.01",
   orders: "M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zM14 2v6h6M9 14h6M9 18h4",
@@ -159,6 +160,8 @@ export default function AdminLayout() {
                 <Item to="/admin/donations" icon={ICONS.donations} label="Donations" />}
               {canAccess("receipts") &&
                 <Item to="/admin/receipts" icon={ICONS.receipts} label="Receipts" />}
+              {canAccess("draws") &&
+                <Item to="/admin/draws" icon={ICONS.draws} label="Lucky draws" />}
 
               {(canAccess("carousel") || canAccess("announcements") || canAccess("gallery")
                 || canAccess("blog") || canAccess("leadership") || canAccess("pages")

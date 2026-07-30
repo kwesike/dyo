@@ -37,7 +37,7 @@ interface AuthValue {
 
 /** The admin sections a super admin implicitly holds — mirrors the SQL. */
 export const ADMIN_SECTIONS = [
-  "overview", "programmes", "registrations", "store", "orders", "donations", "receipts", "vouchers", "tags",
+  "overview", "programmes", "registrations", "store", "orders", "donations", "receipts", "draws", "vouchers", "tags",
   "announcements", "gallery", "blog", "carousel", "leadership",
   "archdeaconries", "pages", "members", "audit",
 ] as const;

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { supabase } from "./../lib/supabaseClient";
 import { naira } from "./../lib/Payments";
+import { useAuth } from "./Authcontext";
 import * as XLSX from "xlsx";
 
 /**
@@ -17,6 +18,8 @@ const PURPOSE_LABEL: Record<string, string> = {
   registration: "Programme",
   donation: "Donation",
   sponsorship: "Sponsorship",
+  body_payment: "Church/parish payment",
+  item_sponsorship: "Item sponsorship",
 };
 
 const PURPOSE_COLOUR: Record<string, string> = {
@@ -24,6 +27,8 @@ const PURPOSE_COLOUR: Record<string, string> = {
   registration: "bg-purple-100 text-purple-800",
   donation: "bg-green-100 text-green-800",
   sponsorship: "bg-amber-100 text-amber-800",
+  body_payment: "bg-indigo-100 text-indigo-800",
+  item_sponsorship: "bg-pink-100 text-pink-800",
 };
 
 // Where each kind of receipt lives on the public site.
@@ -31,10 +36,13 @@ function receiptLink(purpose: string, referenceId: string): string | null {
   if (purpose === "order") return `/orders/${referenceId}`;
   if (purpose === "donation") return `/success-donation/${referenceId}`;
   if (purpose === "sponsorship") return `/sponsorship/${referenceId}`;
+  if (purpose === "body_payment") return `/body-receipt/${referenceId}`;
+  if (purpose === "item_sponsorship") return `/item-sponsorship/${referenceId}`;
   return null; // registrations don't have a standalone receipt page
 }
 
 export default function AdminReceipts() {
+  const { isSuperAdmin } = useAuth();
   const [rows, setRows] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
@@ -64,6 +72,7 @@ export default function AdminReceipts() {
    * records is rarely reversible and matters for reconciliation.
    */
   async function remove(r: any) {
+    if (!isSuperAdmin) return;  // deleting receipts is super-admin only
     if (!confirm(
       `Delete this ${PURPOSE_LABEL[r.purpose] ?? r.purpose} receipt for ${naira(Number(r.amount_naira ?? 0))}?\n\n` +
       `This erases the record that this payment was received. It cannot be undone.`
@@ -199,10 +208,10 @@ export default function AdminReceipts() {
                         : <span className="text-gray-400 text-xs">—</span>}
                     </td>
                     <td className="px-3 py-2">
-                      <button onClick={() => remove(r)} disabled={deletingId === r.id}
+                      {isSuperAdmin && <button onClick={() => remove(r)} disabled={deletingId === r.id}
                               className="text-red-600 text-xs">
                         {deletingId === r.id ? "…" : "Delete"}
-                      </button>
+                      </button>}
                     </td>
                   </tr>
                 );

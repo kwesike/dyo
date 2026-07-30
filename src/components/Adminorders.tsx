@@ -48,11 +48,13 @@ export default function AdminOrders() {
   }
 
   async function removeOrder(o: any) {
-    if (o.status === "paid") {
-      alert("This order is paid, so it's part of your records and can't be deleted. Use Cancel instead.");
-      return;
-    }
-    if (!confirm(`Delete order ${o.order_number}? This was never paid. This cannot be undone.`)) return;
+    // Paid orders can be deleted, but it removes the order record — warn hard.
+    const warning = o.status === "paid"
+      ? `Delete order ${o.order_number}? This order was PAID (${naira(o.total_naira)}). ` +
+        `Deleting removes it from your orders. The payment stays in Receipts, but the ` +
+        `order itself is gone. Consider Cancel instead. This cannot be undone.`
+      : `Delete order ${o.order_number}? This was never paid. This cannot be undone.`;
+    if (!confirm(warning)) return;
 
     setBusyId(o.id);
     await supabase.from("order_items").delete().eq("order_id", o.id);
@@ -176,14 +178,21 @@ export default function AdminOrders() {
                 </button>
               )}
 
-              {/* Paid orders are cancelled (kept on record); unpaid can be deleted. */}
+              {/* Paid orders: Cancel keeps the record; Delete removes it.
+                  Cancel stays the gentler default, Delete is deliberate. */}
               {o.status === "paid" ? (
-                o.status !== "cancelled" && (
-                  <button onClick={() => cancelOrder(o)} disabled={busyId === o.id}
-                          className="text-sm underline text-gray-600">
-                    Cancel order
+                <>
+                  {o.status !== "cancelled" && (
+                    <button onClick={() => cancelOrder(o)} disabled={busyId === o.id}
+                            className="text-sm underline text-gray-600">
+                      Cancel order
+                    </button>
+                  )}
+                  <button onClick={() => removeOrder(o)} disabled={busyId === o.id}
+                          className="text-red-600 text-sm">
+                    {busyId === o.id ? "Deleting…" : "Delete"}
                   </button>
-                )
+                </>
               ) : (
                 <button onClick={() => removeOrder(o)} disabled={busyId === o.id}
                         className="text-red-600 text-sm">
