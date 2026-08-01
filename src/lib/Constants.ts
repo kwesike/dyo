@@ -1,6 +1,6 @@
 export const ARCHDEACONRIES = [
   "Agodi",
-  "Agbrigidi",
+  "Agbirigidi",
   "Agugu",
   "Akinyele",
   "Alakia/Egbeda",
