@@ -15,6 +15,8 @@ import pic5 from "../assets/pic11111.jpg";
 import bishop from "../assets/bishop.jpg";
 import chap from "../assets/chap.jpg";
 import achap from "../assets/achap.jpg";
+import WinnerBanner from "./Winnerbanner";
+import BirthdayBanner from "./Birthdaybanner";
 
 /**
  * Each slide carries its own words, so the write-up changes as the images
@@ -157,6 +159,8 @@ export default function HomePage() {
       )}
 
       <Navbar />
+      <WinnerBanner />
+      <BirthdayBanner />
 
       {/* ---------- carousel ---------- */}
       <section

@@ -28,11 +28,43 @@ export default function AdminProgrammes() {
   const [deletingId, setDeletingId] = useState<string | null>(null);
   const [message, setMessage] = useState("");
 
-  useEffect(() => { void load(); }, []);
+  // Archdeaconry scope: an archdeaconry admin (or a super admin viewing via
+  // ?arch=) is limited to one archdeaconry's programmes, both in the list and
+  // on what new programmes get tagged with.
+  const archParam = new URLSearchParams(window.location.search).get("arch");
+  const isArchAdmin = profile?.role === "archdeaconry_admin";
+  const [scopeSlug, setScopeSlug] = useState<string>(archParam ?? "");
+
+  useEffect(() => {
+    // managed_archdeaconry already holds the slug, so use it directly. (Kept
+    // as an effect in case a name was ever stored, in which case we resolve it.)
+    (async () => {
+      if (scopeSlug || !isArchAdmin || !profile?.managed_archdeaconry) return;
+      // If it looks like a slug (no spaces/caps), use it straight away.
+      const managed = profile.managed_archdeaconry;
+      if (managed === managed.toLowerCase() && !managed.includes(" ")) {
+        setScopeSlug(managed);
+        return;
+      }
+      const { data } = await supabase.from("archdeaconries")
+        .select("slug").eq("name", managed).maybeSingle();
+      if (data) setScopeSlug(data.slug);
+    })();
+  }, [isArchAdmin, profile?.managed_archdeaconry, scopeSlug]);
+
+  useEffect(() => { void load(); }, [scopeSlug]);
 
   async function load() {
+    // An archdeaconry admin must be scoped. If their slug hasn't resolved yet,
+    // don't load (and never fall through to showing every archdeaconry's
+    // programmes). Full/super admins with no scope see all, as before.
+    if (isArchAdmin && !scopeSlug) { setProgrammes([]); return; }
+
+    let q = supabase.from("programmes").select("*").order("starts_at", { ascending: false });
+    // Archdeaconry-scoped admins only ever see their own programmes.
+    if (scopeSlug) q = q.eq("archdeaconry_slug", scopeSlug);
     const [{ data: progs }, { data: st }] = await Promise.all([
-      supabase.from("programmes").select("*").order("starts_at", { ascending: false }),
+      q,
       supabase.from("programme_stats").select("*"),
     ]);
     setProgrammes(progs ?? []);
@@ -106,6 +138,9 @@ export default function AdminProgrammes() {
       attending_tag_url: form.attending_tag_url || null,
       extra_fields: form.extra_fields,
       created_by: profile?.id,
+      // Tag to the archdeaconry when scoped, so the row belongs to it and the
+      // manage-programmes policy permits the write.
+      ...(scopeSlug ? { archdeaconry_slug: scopeSlug } : {}),
     };
 
     const { error } = editing

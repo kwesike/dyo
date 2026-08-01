@@ -1,0 +1,58 @@
+/* News-style winner ticker for the homepage. */
+.wb-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: linear-gradient(90deg, #5c0000, #800000);
+  color: #fff;
+  padding: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.wb-label {
+  flex-shrink: 0;
+  background: #ffd700;
+  color: #5c0000;
+  font-weight: 800;
+  font-size: 0.85rem;
+  padding: 10px 16px;
+  letter-spacing: 0.04em;
+  z-index: 2;
+}
+
+.wb-track {
+  flex: 1;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.wb-slide {
+  display: inline-flex;
+  align-items: center;
+  gap: 40px;
+  padding-left: 40px;
+  animation: wb-scroll 30s linear infinite;
+}
+.wb-banner:hover .wb-slide { animation-play-state: paused; }
+
+.wb-item {
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+.wb-item strong { color: #ffd700; }
+
+@keyframes wb-scroll {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+
+
+/* Birthday variant — warmer palette */
+.wb-banner--birthday {
+  background: linear-gradient(90deg, #6a0572, #a83279);
+}
+.wb-label--birthday {
+  background: #ffd6f0;
+  color: #6a0572;
+}

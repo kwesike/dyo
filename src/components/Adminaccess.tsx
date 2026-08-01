@@ -30,7 +30,7 @@ const SECTION_LABELS: Record<string, string> = {
   programmes: "Programmes", registrations: "Registrations", store: "Store items",
   orders: "Orders", donations: "Donations", receipts: "Receipts", draws: "Lucky draws", vouchers: "Vouchers", tags: "Tags", announcements: "Flyers & updates",
   gallery: "Gallery", blog: "Blog", carousel: "Slideshow", leadership: "Leadership",
-  archdeaconries: "All archdeaconries", pages: "Custom pages", members: "Members",
+  archdeaconries: "All archdeaconries", pages: "Custom pages", members: "Members", birthdays: "Birthdays",
   overview: "Overview (dashboard)",
   audit: "Audit trail",
 };

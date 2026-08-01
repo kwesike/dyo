@@ -11,6 +11,7 @@ interface Member {
   full_name: string | null;
   email: string | null;
   phone: string | null;
+  date_of_birth: string | null;
   church: string | null;
   archdeaconry: string | null;
   photo_url: string | null;
@@ -24,6 +25,12 @@ const ROLE_LABEL: Record<Role, string> = {
   super_admin: "Super admin",
 };
 
+// Show a birthday as day + month (no year on the row; full date in the profile).
+function birthdayShort(dob: string | null): string {
+  if (!dob) return "—";
+  return new Date(dob).toLocaleDateString("en-NG", { day: "numeric", month: "short" });
+}
+
 export default function AdminMembers() {
   const { profile } = useAuth();
   const [members, setMembers] = useState<Member[]>([]);
@@ -33,6 +40,7 @@ export default function AdminMembers() {
   const [loading, setLoading] = useState(true);
   const [message, setMessage] = useState("");
   const [confirming, setConfirming] = useState<string | null>(null);
+  const [viewing, setViewing] = useState<Member | null>(null);
 
   const isSuperAdmin = profile?.role === "super_admin";
 
@@ -42,7 +50,7 @@ export default function AdminMembers() {
     setLoading(true);
     const { data, error } = await supabase
       .from("profiles")
-      .select("id, full_name, email, phone, church, archdeaconry, photo_url, role, created_at")
+      .select("id, full_name, email, phone, date_of_birth, church, archdeaconry, photo_url, role, created_at")
       .order("created_at", { ascending: false });
 
     if (error) setMessage("Couldn't load members.");
@@ -60,7 +68,8 @@ export default function AdminMembers() {
         m.full_name?.toLowerCase().includes(q) ||
         m.email?.toLowerCase().includes(q) ||
         m.church?.toLowerCase().includes(q) ||
-        m.phone?.includes(q));
+        m.phone?.includes(q)
+      );
   }, [members, search, archdeaconry, roleFilter]);
 
   const adminCount = members.filter(
@@ -69,9 +78,6 @@ export default function AdminMembers() {
 
   async function changeRole(member: Member, role: Role) {
     setMessage("");
-
-    // Guard rails. The database enforces who may change roles at all; these
-    // stop an admin locking everyone (including themselves) out by accident.
     if (member.id === profile?.id) {
       setConfirming(null);
       return setMessage("You can't change your own role — ask another super admin.");
@@ -106,6 +112,7 @@ export default function AdminMembers() {
       Phone: m.phone ?? "",
       Church: m.church ?? "",
       Archdeaconry: m.archdeaconry ?? "",
+      DateOfBirth: m.date_of_birth ?? "",
       Role: ROLE_LABEL[m.role],
       Joined: new Date(m.created_at).toLocaleDateString("en-NG"),
     }));
@@ -176,8 +183,10 @@ export default function AdminMembers() {
                 <th className="border px-2 py-1 text-left">Name</th>
                 <th className="border px-2 py-1 text-left">Contact</th>
                 <th className="border px-2 py-1 text-left">Church</th>
+                <th className="border px-2 py-1">Birthday</th>
                 <th className="border px-2 py-1">Role</th>
                 <th className="border px-2 py-1">Access</th>
+                <th className="border px-2 py-1"></th>
               </tr>
             </thead>
             <tbody>
@@ -206,6 +215,9 @@ export default function AdminMembers() {
                     <td className="border px-2 py-1">
                       <div>{m.church}</div>
                       <div className="text-gray-500">{m.archdeaconry}</div>
+                    </td>
+                    <td className="border px-2 py-1 text-center whitespace-nowrap">
+                      {birthdayShort(m.date_of_birth)}
                     </td>
                     <td className="border px-2 py-1 text-center">
                       <span className={`text-xs px-2 py-1 rounded ${
@@ -239,11 +251,61 @@ export default function AdminMembers() {
                         </button>
                       )}
                     </td>
+                    <td className="border px-2 py-1 text-center">
+                      <button onClick={() => setViewing(m)}
+                              className="text-[#800000] underline text-xs">
+                        View
+                      </button>
+                    </td>
                   </tr>
                 );
               })}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {/* Member profile — admin-only view of full details. */}
+      {viewing && (
+        <div className="fixed inset-0 z-50 bg-black/50 grid place-items-center p-4"
+             onClick={() => setViewing(null)}>
+          <div className="bg-white rounded-xl max-w-md w-full p-6" onClick={(e) => e.stopPropagation()}>
+            <div className="flex items-center gap-4 mb-4">
+              {viewing.photo_url
+                ? <img src={viewing.photo_url} alt=""
+                       className="w-16 h-16 rounded-full object-cover" />
+                : <div className="w-16 h-16 rounded-full bg-gray-200 grid place-items-center text-xl">
+                    {viewing.full_name?.[0] ?? "?"}
+                  </div>}
+              <div>
+                <h2 className="text-xl font-bold">{viewing.full_name ?? "No name"}</h2>
+                <span className={`text-xs px-2 py-0.5 rounded ${
+                  viewing.role === "super_admin" ? "bg-purple-100 text-purple-800"
+                    : viewing.role === "admin" ? "bg-blue-100 text-blue-800"
+                    : "bg-gray-100 text-gray-700"}`}>
+                  {ROLE_LABEL[viewing.role]}
+                </span>
+              </div>
+            </div>
+
+            <dl className="text-sm divide-y">
+              <div className="flex justify-between py-2"><dt className="text-gray-500">Email</dt><dd>{viewing.email ?? "—"}</dd></div>
+              <div className="flex justify-between py-2"><dt className="text-gray-500">Phone</dt><dd>{viewing.phone ?? "—"}</dd></div>
+              <div className="flex justify-between py-2"><dt className="text-gray-500">Date of birth</dt>
+                <dd>{viewing.date_of_birth
+                  ? new Date(viewing.date_of_birth).toLocaleDateString("en-NG", { day: "numeric", month: "long", year: "numeric" })
+                  : "—"}</dd></div>
+              <div className="flex justify-between py-2"><dt className="text-gray-500">Church</dt><dd>{viewing.church ?? "—"}</dd></div>
+              <div className="flex justify-between py-2"><dt className="text-gray-500">Archdeaconry</dt><dd>{viewing.archdeaconry ?? "—"}</dd></div>
+              <div className="flex justify-between py-2"><dt className="text-gray-500">Joined</dt>
+                <dd>{new Date(viewing.created_at).toLocaleDateString("en-NG")}</dd></div>
+            </dl>
+
+            <button onClick={() => setViewing(null)}
+                    className="mt-5 w-full bg-gray-100 rounded py-2 text-sm">
+              Close
+            </button>
+          </div>
         </div>
       )}
     </div>

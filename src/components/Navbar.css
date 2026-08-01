@@ -174,11 +174,15 @@
 .site-nav-signout:hover { color: #fff; }
 
 .site-nav-cta {
-  background: var(--gold);
+  background: #ffd700;
   color: #5c0000 !important;
-  font-weight: 600;
+  font-weight: 700;
+  padding: 8px 18px;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background 0.2s;
 }
-.site-nav-cta:hover { background: #ffe34d; }
+.site-nav-cta:hover { background: #ffcc00; }
 
 /* ---------- mobile ---------- */
 

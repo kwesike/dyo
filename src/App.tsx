@@ -64,6 +64,9 @@ import ItemSponsorshipReceipt from "./components/Itemsponsorshipreceipt";
 import AdminDraws from "./components/Admindraws";
 import Luckydrawwidget from "./components/Luckydrawwidget";
 import ClaimPrize from "./components/Claimprize";
+import WinnerBanner from "./components/Winnerbanner";
+import BirthdayBanner from "./components/Birthdaybanner";
+import AdminBirthdays from "./components/Adminbirthdays";
 
 import "./components/Layout.css";
 
@@ -129,6 +132,8 @@ export default function App() {
             <Route path="/body-receipt/:id" element={<BodyReceipt />} />
             <Route path="/item-sponsorship/:id" element={<ItemSponsorshipReceipt />} />
             <Route path="/claim/:drawId" element={<ClaimPrize />} />
+            <Route path="/winners" element={<WinnerBanner />} />
+            <Route path="/birthdays" element={<BirthdayBanner />} />
 
             {/* ============ ADMIN ============ */}
             <Route path="/admin" element={<RequireAdmin><AdminLayout /></RequireAdmin>}>
@@ -151,6 +156,7 @@ export default function App() {
               <Route path="audit" element={<RequireSection section="audit"><AdminAudit /></RequireSection>} />
               <Route path="donations" element={<RequireSection section="donations"><AdminDonations /></RequireSection>} />
               <Route path="receipts" element={<RequireSection section="receipts"><AdminReceipts /></RequireSection>} />
+              <Route path="birthdays" element={<RequireSection section="birthdays"><AdminBirthdays /></RequireSection>} />
 
               <Route path="members" element={<RequireSection section="members"><AdminMembers /></RequireSection>} />
               <Route path="access" element={<AdminAccess />} />
