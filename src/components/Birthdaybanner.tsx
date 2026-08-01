@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
-import "./WinnerBanner.css";
+import "./Winnerbanner.css";
 
 /**
  * Birthday celebration — a homepage shout-out for members celebrating today.
