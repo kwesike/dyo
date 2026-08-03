@@ -153,7 +153,10 @@ function drawCover(
   const scale = Math.max(w / img.width, h / img.height);
   const dw = img.width * scale;
   const dh = img.height * scale;
-  ctx.drawImage(img, x + (w - dw) / 2, y + (h - dh) / 2, dw, dh);
+  // Centre horizontally, but bias the vertical crop toward the TOP so the
+  // head/face is never cut off (faces sit in the upper part of most photos).
+  const offsetY = (h - dh) * 0.18;  // closer to the top than dead-centre
+  ctx.drawImage(img, x + (w - dw) / 2, y + offsetY, dw, dh);
 }
 
 /** Shrinks the font until the text fits, rather than letting it overflow. */
@@ -241,7 +244,7 @@ export async function composeAttendingCard(opts: {
     box = { x: cfg.photo.cx * W - d / 2, y: cfg.photo.cy * H - d / 2, w: d, h: d };
   }
 
-  const pad = Math.min(box.w, box.h) * 0.06;
+  const pad = Math.min(box.w, box.h) * 0.09;
   const inner = {
     x: box.x + pad,
     y: box.y + pad,
@@ -251,17 +254,21 @@ export async function composeAttendingCard(opts: {
 
   // 3. Split the panel: portrait above, details below.
   const hasDetails = !!(opts.details.church || opts.details.archdeaconry);
-  const textShare = hasDetails ? 0.34 : 0.20;  // reserve clear space below the photo for details
+  const textShare = hasDetails ? 0.40 : 0.26;  // reserve clear space below the photo for details
   const textHeight = inner.h * textShare;
   const photoHeight = inner.h - textHeight;
 
-  // The photo fills the panel's WIDTH and the upper (photo) portion of its
-  // height — a portrait rectangle, not a circle. The lower part is left clear
-  // for the name and details. A small radius softens the corners without
-  // cropping the face the way a circle does.
-  const photoW = inner.w;
-  const photoH = photoHeight;
-  const photoX = inner.x;
+  // The photo sits in the upper portion of the panel. Rather than stretch it
+  // to the full panel width (which crops the top of the head when the photo is
+  // portrait), we fit it to a natural portrait aspect (4:5) and CENTRE it, so
+  // the whole face shows with margin around it.
+  const maxPhotoW = inner.w * 0.86;
+  const maxPhotoH = photoHeight * 0.96;
+  // portrait 4:5 — width derived from height, capped by width
+  let photoH = maxPhotoH;
+  let photoW = photoH * 0.8;
+  if (photoW > maxPhotoW) { photoW = maxPhotoW; photoH = photoW / 0.8; }
+  const photoX = inner.x + (inner.w - photoW) / 2;   // centre horizontally
   const photoY = inner.y;
   const radius = Math.min(photoW, photoH) * 0.05;
 
@@ -287,7 +294,7 @@ export async function composeAttendingCard(opts: {
   const textTop = photoY + photoSide + inner.h * 0.035;
   const light = isLightRegion(ctx, inner.x, textTop, inner.w, textHeight);
   const ink = light ? "#3a0a0a" : "#ffffff";
-  //const inkSoft = light ? "rgba(58,10,10,0.72)" : "rgba(255,255,255,0.85)";
+  const inkSoft = light ? "rgba(58,10,10,0.72)" : "rgba(255,255,255,0.85)";
 
   ctx.textAlign = "center";
   ctx.textBaseline = "top";
@@ -325,7 +332,7 @@ export async function composeAttendingCard(opts: {
       .filter(Boolean) as string[];
 
     const detailSize = Math.max(10, nameSize * 0.56);
-    ctx.fillStyle = ink;
+    ctx.fillStyle = inkSoft;
 
     lines.forEach((line, i) => {
       const label = i === 1 ? `${line} Archdeaconry` : line;
