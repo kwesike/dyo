@@ -67,6 +67,10 @@ import ClaimPrize from "./components/Claimprize";
 import WinnerBanner from "./components/Winnerbanner";
 import BirthdayBanner from "./components/Birthdaybanner";
 import AdminBirthdays from "./components/Adminbirthdays";
+import Admintournaments from "./components/Admintournaments";
+import TournamentRegister from "./components/Tournamentregister";
+import TournamentsPage from "./components/Tournamentspage";
+  
 
 import "./components/Layout.css";
 
@@ -113,6 +117,8 @@ export default function App() {
             {/* ============ PROGRAMMES ============ */}
             <Route path="/programmes" element={<ProgrammesPage />} />
             <Route path="/programmes/:slug" element={<ProgrammeDetail />} />
+            <Route path="/tournaments" element={<TournamentsPage />} />
+            <Route path="/tournaments/:slug" element={<TournamentsPage />} />
 
             {/* ============ STORE ============ */}
             {/* Browsing stays open — making people sign in to look at a polo
@@ -134,6 +140,7 @@ export default function App() {
             <Route path="/claim/:drawId" element={<ClaimPrize />} />
             <Route path="/winners" element={<WinnerBanner />} />
             <Route path="/birthdays" element={<BirthdayBanner />} />
+            <Route path="/tournaments/:slug/register" element={<TournamentRegister />} />
 
             {/* ============ ADMIN ============ */}
             <Route path="/admin" element={<RequireAdmin><AdminLayout /></RequireAdmin>}>
@@ -161,6 +168,7 @@ export default function App() {
               <Route path="members" element={<RequireSection section="members"><AdminMembers /></RequireSection>} />
               <Route path="access" element={<AdminAccess />} />
               <Route path="my-archdeaconry" element={<MyArchdeaconry />} />
+              <Route path="tournaments" element={<RequireSection section="tournaments"><Admintournaments /></RequireSection>} />
               <Route path="pages" element={<RequireSection section="pages"><AdminPages /></RequireSection>} />
               <Route path="draws" element={<RequireSection section="draws"><AdminDraws /></RequireSection>} />
               <Route path="legacy" element={<AdminDashboard />} />

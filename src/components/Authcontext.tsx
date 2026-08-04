@@ -39,7 +39,7 @@ interface AuthValue {
 export const ADMIN_SECTIONS = [
   "overview", "programmes", "registrations", "store", "orders", "donations", "receipts", "draws", "vouchers", "tags",
   "announcements", "gallery", "blog", "carousel", "leadership",
-  "archdeaconries", "pages", "members", "birthdays", "audit",
+  "archdeaconries", "pages", "members", "birthdays", "tournaments", "audit",
 ] as const;
 
 const AuthContext = createContext<AuthValue | undefined>(undefined);
@@ -140,10 +140,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     canAccess: (section: string) => {
       if (!profile) return false;
       if (profile.role === "super_admin") return true;
-      // Archdeaconry admins manage their own archdeaconry page and, scoped to
-      // their archdeaconry, its programmes (the database enforces the scope).
+      // Archdeaconry admins manage their own archdeaconry page and its
+      // programmes, PLUS any extra sections they've been granted (e.g.
+      // tournaments). The database enforces the archdeaconry scope.
       if (profile.role === "archdeaconry_admin")
-        return section === "my-archdeaconry" || section === "programmes";
+        return section === "my-archdeaconry"
+            || section === "programmes"
+            || (profile.admin_sections ?? []).includes(section);
       if (profile.role === "admin") return (profile.admin_sections ?? []).includes(section);
       return false;
     },

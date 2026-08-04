@@ -30,7 +30,7 @@ const SECTION_LABELS: Record<string, string> = {
   programmes: "Programmes", registrations: "Registrations", store: "Store items",
   orders: "Orders", donations: "Donations", receipts: "Receipts", draws: "Lucky draws", vouchers: "Vouchers", tags: "Tags", announcements: "Flyers & updates",
   gallery: "Gallery", blog: "Blog", carousel: "Slideshow", leadership: "Leadership",
-  archdeaconries: "All archdeaconries", pages: "Custom pages", members: "Members", birthdays: "Birthdays",
+  archdeaconries: "All archdeaconries", pages: "Custom pages", members: "Members", birthdays: "Birthdays", tournaments: "Tournaments",
   overview: "Overview (dashboard)",
   audit: "Audit trail",
 };
@@ -116,7 +116,8 @@ export default function AdminAccess() {
     const patch = {
       role: target.role,
       managed_archdeaconry: target.role === "archdeaconry_admin" ? target.managed_archdeaconry : null,
-      admin_sections: target.role === "admin" ? (target.admin_sections ?? []) : [],
+      admin_sections: (target.role === "admin" || target.role === "archdeaconry_admin")
+        ? (target.admin_sections ?? []) : [],
     };
 
     const { error } = await supabase.from("profiles").update(patch).eq("id", target.id);
@@ -239,6 +240,26 @@ export default function AdminAccess() {
                         <option key={a.slug} value={a.slug}>{a.name}</option>
                       ))}
                     </select>
+
+                    <label className="a-field-label" style={{ marginTop: 16 }}>
+                      Extra access <span style={{ color: "var(--muted)", fontWeight: 400 }}>(optional — beyond their archdeaconry)</span>
+                    </label>
+                    <div className="a-section-grid">
+                      {ADMIN_SECTIONS.map((section) => {
+                        const on = (editing.admin_sections ?? []).includes(section);
+                        return (
+                          <label key={section} className={`a-section-toggle${on ? " is-on" : ""}`}>
+                            <input type="checkbox" checked={on}
+                              onChange={(e) => {
+                                const set = new Set(editing.admin_sections ?? []);
+                                e.target.checked ? set.add(section) : set.delete(section);
+                                setEditing({ ...editing, admin_sections: [...set] });
+                              }} />
+                            {SECTION_LABELS[section] ?? section}
+                          </label>
+                        );
+                      })}
+                    </div>
                   </>
                 )}
 

@@ -24,8 +24,9 @@ export default function MyArchdeaconry() {
   const [programmes, setProgrammes] = useState<any[]>([]);
   const [registrations, setRegistrations] = useState<any[]>([]);
   const [birthdays, setBirthdays] = useState<any[]>([]);
+  const [tourneyRegs, setTourneyRegs] = useState<any[]>([]);
   const [albums, setAlbums] = useState<any[]>([]);
-  const [tab, setTab] = useState<"page" | "programmes" | "participants" | "gallery" | "birthdays">("page");
+  const [tab, setTab] = useState<"page" | "programmes" | "participants" | "gallery" | "birthdays" | "tournaments">("page");
   const [blurb, setBlurb] = useState("");
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState("");
@@ -141,9 +142,32 @@ export default function MyArchdeaconry() {
     setBirthdays(data ?? []);
   }
 
+  // Tournament registrations for teams in THIS archdeaconry (RLS scopes it).
+  async function loadTourneyRegs() {
+    // teams tagged with this archdeaconry's slug
+    const { data: myTeams } = await supabase.from("tournament_teams")
+      .select("id, name, tournament_id").eq("slug", slug);
+    const teamIds = (myTeams ?? []).map((t: any) => t.id);
+    if (teamIds.length === 0) { setTourneyRegs([]); return; }
+    const { data: regs } = await supabase.from("tournament_registrations")
+      .select("*").in("team_id", teamIds).order("created_at", { ascending: false });
+    // attach team name + tournament for display
+    const teamMap = Object.fromEntries((myTeams ?? []).map((t: any) => [t.id, t.name]));
+    setTourneyRegs((regs ?? []).map((r: any) => ({ ...r, team_name: teamMap[r.team_id] })));
+  }
+
+  async function reviewReg(id: string, decision: "approved" | "rejected") {
+    const { error } = await supabase.rpc("review_registration", {
+      p_registration_id: id, p_decision: decision,
+    });
+    if (error) { setMessage(error.message); return; }
+    void loadTourneyRegs();
+  }
+
   useEffect(() => {
     if (tab === "participants") void loadRegistrations();
     if (tab === "birthdays") void loadBirthdays();
+    if (tab === "tournaments") void loadTourneyRegs();
   }, [tab, programmes]);
 
   async function saveBlurb() {
@@ -234,7 +258,7 @@ export default function MyArchdeaconry() {
       </div>
 
       <div style={{ display: "flex", gap: 6, marginBottom: 22, flexWrap: "wrap" }}>
-        {(["page", "programmes", "participants", "gallery", "birthdays"] as const).map((t) => (
+        {(["page", "programmes", "participants", "gallery", "birthdays", "tournaments"] as const).map((t) => (
           <button key={t} onClick={() => setTab(t)}
                   className={tab === t ? "a-btn" : "a-btn a-btn--quiet"}
                   style={{ minHeight: 38, textTransform: "capitalize" }}>
@@ -420,6 +444,71 @@ export default function MyArchdeaconry() {
                   <span style={{ color: "var(--muted)" }}>
                     {new Date(b.turns_on).toLocaleDateString("en-NG", { day: "numeric", month: "long" })}
                   </span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {tab === "tournaments" && (
+        <div className="a-card">
+          <p className="a-eyebrow">Tournament registrations</p>
+          <p style={{ margin: "0 0 12px", color: "var(--muted)" }}>
+            Players and coaches who registered under {arch?.name ?? "your archdeaconry"}'s
+            teams. Approve them to enter the tournament.
+          </p>
+          {tourneyRegs.length === 0 ? (
+            <p style={{ color: "var(--muted)" }}>No registrations for your teams yet.</p>
+          ) : (
+            <div style={{ display: "grid", gap: 10 }}>
+              {tourneyRegs.map((r) => (
+                <div key={r.id} style={{ border: "1px solid var(--line)", borderRadius: 10, padding: 12 }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "start" }}>
+                    <div>
+                      <strong>{r.full_name}</strong>
+                      <span style={{ fontSize: "0.8rem", marginLeft: 8, textTransform: "capitalize",
+                                     padding: "1px 8px", borderRadius: 6, background: "#f0e9e9" }}>
+                        {r.role_in_team}
+                      </span>
+                      <p style={{ fontSize: "0.85rem", color: "var(--muted)", margin: "3px 0 0" }}>
+                        {r.team_name} · {r.phone}
+                      </p>
+                    </div>
+                    <span className={`a-pill ${r.status === "approved" ? "a-pill--live"
+                        : r.status === "rejected" ? "a-pill--draft" : "a-pill--draft"}`}
+                      style={{ textTransform: "capitalize" }}>
+                      {r.status}
+                    </span>
+                  </div>
+
+                  {r.answers && Object.keys(r.answers).length > 0 && (
+                    <div style={{ fontSize: "0.82rem", color: "var(--muted)", marginTop: 8,
+                                  borderTop: "1px solid var(--line)", paddingTop: 8 }}>
+                      {Object.entries(r.answers).map(([k, v]: any) => (
+                        <span key={k} style={{ marginRight: 12 }}>
+                          {typeof v === "string" && v.startsWith("http")
+                            ? <a href={v} target="_blank" rel="noreferrer" style={{ color: "#800000" }}>View file</a>
+                            : String(v)}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+
+                  {r.status === "pending" && (
+                    <div style={{ display: "flex", gap: 8, marginTop: 10 }}>
+                      <button onClick={() => reviewReg(r.id, "approved")}
+                              style={{ background: "#1a7a3a", color: "#fff", border: "none",
+                                       borderRadius: 7, padding: "6px 14px", cursor: "pointer", fontSize: "0.85rem" }}>
+                        Approve
+                      </button>
+                      <button onClick={() => reviewReg(r.id, "rejected")}
+                              style={{ background: "#b00020", color: "#fff", border: "none",
+                                       borderRadius: 7, padding: "6px 14px", cursor: "pointer", fontSize: "0.85rem" }}>
+                        Reject
+                      </button>
+                    </div>
+                  )}
                 </div>
               ))}
             </div>

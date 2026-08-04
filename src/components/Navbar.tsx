@@ -86,6 +86,7 @@ export default function Navbar() {
         <NavLink to="/store" onClick={close}>Store</NavLink>
         <NavLink to="/gallery" onClick={close}>Gallery</NavLink>
         <NavLink to="/blog" onClick={close}>Blog</NavLink>
+        <NavLink to="/tournaments" onClick={close}>Tournaments</NavLink>
 
         {archs.length > 0 && (
           <div className={`site-nav-drop${archOpen ? " is-open" : ""}`}>
