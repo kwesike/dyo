@@ -4,6 +4,8 @@ import TournamentFields from "./Tournamentfields";
 import TournamentRegistrations from "./Tournamentregistrations";
 import { ARCHDEACONRIES } from "../lib/Constants";
 import { uploadPublicFile } from "../lib/Storage";
+import MatchConsole from "./Matchconsole";
+import TournamentBracket from "./TournamentBracket";
 
 /**
  * Tournament management — Stage 1.
@@ -15,13 +17,15 @@ import { uploadPublicFile } from "../lib/Storage";
 type Tournament = {
   id: string; name: string; slug: string; team_type: string;
   status: string; starts_on: string | null; ends_on: string | null;
-  banner_url?: string | null; card_template_url?: string | null;
+  banner_url?: string | null; card_template_url?: string | null; format?: string;
 };
-type Team = { id: string; name: string; played: number; won: number; drawn: number;
+type Team = { id: string; name: string; group_name: string | null; played: number; won: number; drawn: number;
   lost: number; goals_for: number; goals_against: number; points: number };
 type Fixture = { id: string; home_team: string | null; away_team: string | null;
   round: string | null; venue: string | null; kickoff_at: string | null;
   status: string; home_score: number; away_score: number; minute: number | null };
+
+type TabKey = "teams" | "fixtures" | "standings" | "bracket" | "fields" | "registrations";
 
 const slugify = (s: string) =>
   s.toLowerCase().trim().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
@@ -32,15 +36,18 @@ export default function AdminTournaments() {
   const [teams, setTeams] = useState<Team[]>([]);
   const [fixtures, setFixtures] = useState<Fixture[]>([]);
   const [loading, setLoading] = useState(true);
-  const [tab, setTab] = useState<"teams" | "fixtures" | "standings" | "fields" | "registrations">("teams");
+  const [tab, setTab] = useState<TabKey>("teams");
+  const [consoleFixture, setConsoleFixture] = useState<any>(null);
 
   // new tournament form
   const [newName, setNewName] = useState("");
   const [newType, setNewType] = useState("archdeaconry");
+  const [newFormat, setNewFormat] = useState("league");
 
   // new team / fixture
   const [teamName, setTeamName] = useState("");
   const [teamArch, setTeamArch] = useState("");  // which archdeaconry this team represents
+  const [teamGroup, setTeamGroup] = useState("");  // which group (A, B, ...)
   const [fx, setFx] = useState({ home: "", away: "", round: "", venue: "", kickoff: "" });
 
   useEffect(() => { void loadTournaments(); }, []);
@@ -66,7 +73,7 @@ export default function AdminTournaments() {
   async function createTournament() {
     if (!newName.trim()) return;
     const { error } = await supabase.from("tournaments").insert({
-      name: newName.trim(), slug: slugify(newName), team_type: newType, status: "upcoming",
+      name: newName.trim(), slug: slugify(newName), team_type: newType, format: newFormat, status: "upcoming",
     });
     if (error) { alert(error.message); return; }
     setNewName("");
@@ -84,9 +91,10 @@ export default function AdminTournaments() {
     const teamSlug = teamArch ? slugify(teamArch) : slugify(teamName);
     const { error } = await supabase.from("tournament_teams").insert({
       tournament_id: selected.id, name: teamName.trim(), slug: teamSlug,
+      group_name: teamGroup || null,
     });
     if (error) { alert(error.message); return; }
-    setTeamName(""); setTeamArch("");
+    setTeamName(""); setTeamArch(""); setTeamGroup("");
     void loadDetail();
   }
 
@@ -137,15 +145,107 @@ export default function AdminTournaments() {
   // Draw a simple round-robin: everyone plays everyone once.
   async function drawRoundRobin() {
     if (!selected || teams.length < 2) { alert("Add at least two teams first."); return; }
-    if (!confirm(`Draw a round-robin for ${teams.length} teams? This creates ${teams.length * (teams.length - 1) / 2} fixtures.`)) return;
+
+    // Group the teams. For group_knockout/league with groups, draw a
+    // round-robin WITHIN each group. Ungrouped teams form one pool.
+    const byGroup: Record<string, Team[]> = {};
+    for (const t of teams) {
+      const key = t.group_name || "_all";
+      (byGroup[key] ??= []).push(t);
+    }
+
     const rows: any[] = [];
-    for (let i = 0; i < teams.length; i++) {
-      for (let j = i + 1; j < teams.length; j++) {
-        rows.push({ tournament_id: selected.id, home_team: teams[i].id, away_team: teams[j].id, round: "Group" });
+    for (const [group, list] of Object.entries(byGroup)) {
+      for (let i = 0; i < list.length; i++) {
+        for (let j = i + 1; j < list.length; j++) {
+          rows.push({
+            tournament_id: selected.id,
+            home_team: list[i].id, away_team: list[j].id,
+            stage: "group",
+            group_name: group === "_all" ? null : group,
+            round: group === "_all" ? "League" : `Group ${group}`,
+          });
+        }
       }
     }
+
+    if (rows.length === 0) { alert("Nothing to draw."); return; }
+    if (!confirm(`Draw ${rows.length} group fixture(s)?`)) return;
     const { error } = await supabase.from("fixtures").insert(rows);
     if (error) { alert(error.message); return; }
+    void loadDetail();
+  }
+
+  function prettyRound(stage: string) {
+    return stage === "final" ? "Final" : stage === "semi" ? "Semi-final"
+      : stage === "quarter" ? "Quarter-final" : stage === "round_16" ? "Round of 16"
+      : stage === "round_32" ? "Round of 32" : "Round";
+  }
+
+  // Top N of each group by points (for seeding a bracket after groups).
+  function qualifiedTeams(perGroup = 2): Team[] {
+    const groups = Array.from(new Set(teams.map((t) => t.group_name).filter(Boolean))) as string[];
+    if (groups.length === 0) return teams;
+    const out: Team[] = [];
+    for (const g of groups.sort()) {
+      const sorted = teams.filter((t) => t.group_name === g).sort((a, b) =>
+        b.points - a.points ||
+        (b.goals_for - b.goals_against) - (a.goals_for - a.goals_against));
+      out.push(...sorted.slice(0, perGroup));
+    }
+    return out;
+  }
+
+  // Build a knockout bracket: create every round (up to the final) and wire
+  // each winner to advance to the next round's fixture.
+  async function drawBracket(bracketTeams: Team[]) {
+    if (!selected) return;
+    const n = bracketTeams.length;
+    if (n < 2) { alert("Need at least 2 teams for a bracket."); return; }
+
+    let size = 1; while (size < n) size *= 2;
+    const roundName = (slots: number) =>
+      slots === 2 ? "final" : slots === 4 ? "semi" : slots === 8 ? "quarter"
+        : slots === 16 ? "round_16" : slots === 32 ? "round_32" : "round";
+
+    if (!confirm(`Create a ${size}-team knockout bracket (byes for empty slots)?`)) return;
+
+    const shuffled = [...bracketTeams].sort(() => Math.random() - 0.5);
+
+    const rounds: string[][] = [];
+    let slots = size;
+    while (slots >= 2) {
+      const count = slots / 2;
+      const stage = roundName(slots);
+      const ids: string[] = [];
+      for (let i = 0; i < count; i++) {
+        const { data, error } = await supabase.from("fixtures").insert({
+          tournament_id: selected.id, stage, bracket_slot: i, round: prettyRound(stage),
+        }).select("id").single();
+        if (error) { alert(error.message); return; }
+        ids.push(data!.id);
+      }
+      rounds.push(ids);
+      slots = count;
+    }
+
+    for (let r = 0; r < rounds.length - 1; r++) {
+      for (let i = 0; i < rounds[r].length; i++) {
+        await supabase.from("fixtures").update({
+          advances_to: rounds[r + 1][Math.floor(i / 2)],
+          advances_as_home: i % 2 === 0,
+        }).eq("id", rounds[r][i]);
+      }
+    }
+
+    const first = rounds[0];
+    for (let i = 0; i < first.length; i++) {
+      await supabase.from("fixtures").update({
+        home_team: shuffled[i * 2]?.id ?? null,
+        away_team: shuffled[i * 2 + 1]?.id ?? null,
+      }).eq("id", first[i]);
+    }
+
     void loadDetail();
   }
 
@@ -182,6 +282,12 @@ export default function AdminTournaments() {
               <option value="parish">Parishes</option>
               <option value="church">Churches</option>
               <option value="mixed">Mixed</option>
+            </select>
+            <select className="border rounded px-3 py-2" value={newFormat}
+                    onChange={(e) => setNewFormat(e.target.value)}>
+              <option value="league">League (table)</option>
+              <option value="knockout">Knockout (bracket)</option>
+              <option value="group_knockout">Groups + knockout</option>
             </select>
             <button onClick={createTournament} className="bg-[#800000] text-white px-4 py-2 rounded">
               Create
@@ -249,7 +355,10 @@ export default function AdminTournaments() {
       </div>
 
       <div className="flex gap-2 mb-5">
-        {(["teams", "fixtures", "standings", "fields", "registrations"] as const).map((t) => (
+        {(["teams", "fixtures",
+          ...(selected.format !== "knockout" ? ["standings"] : []),
+          ...(selected.format !== "league" ? ["bracket"] : []),
+          "fields", "registrations"] as TabKey[]).map((t) => (
           <button key={t} onClick={() => setTab(t)}
                   className={`px-4 py-2 rounded capitalize ${tab === t ? "bg-[#800000] text-white" : "bg-gray-100"}`}>
             {t}
@@ -262,8 +371,6 @@ export default function AdminTournaments() {
           <div className="flex gap-2 mb-4 flex-wrap">
             <input className="border rounded px-3 py-2 flex-1 min-w-[180px]" placeholder="Team name"
                    value={teamName} onChange={(e) => setTeamName(e.target.value)} />
-            {/* For archdeaconry tournaments, link the team to an archdeaconry so
-                that archdeaconry's admin can approve its players. */}
             {selected.team_type === "archdeaconry" && (
               <select className="border rounded px-3 py-2" value={teamArch}
                       onChange={(e) => setTeamArch(e.target.value)}>
@@ -271,12 +378,21 @@ export default function AdminTournaments() {
                 {ARCHDEACONRIES.map((a) => <option key={a} value={a}>{a}</option>)}
               </select>
             )}
+            {/* Group picker for group-based formats */}
+            {(selected.format === "group_knockout" || selected.format === "league") && (
+              <select className="border rounded px-3 py-2" value={teamGroup}
+                      onChange={(e) => setTeamGroup(e.target.value)}>
+                <option value="">Group… (optional)</option>
+                {["A", "B", "C", "D", "E", "F", "G", "H"].map((g) =>
+                  <option key={g} value={g}>Group {g}</option>)}
+              </select>
+            )}
             <button onClick={addTeam} className="bg-[#800000] text-white px-4 py-2 rounded">Add team</button>
           </div>
           <div className="grid gap-2">
-            {teams.map((t) => (
+            {teams.map((t: any) => (
               <div key={t.id} className="border rounded p-3 flex justify-between items-center">
-                <span>{t.name}</span>
+                <span>{t.name}{t.group_name && <span className="text-xs text-gray-500 ml-2">Group {t.group_name}</span>}</span>
                 <button onClick={() => removeTeam(t.id)} className="text-red-600 text-sm">Remove</button>
               </div>
             ))}
@@ -307,11 +423,26 @@ export default function AdminTournaments() {
               <input type="datetime-local" className="border rounded px-3 py-2"
                      value={fx.kickoff} onChange={(e) => setFx({ ...fx, kickoff: e.target.value })} />
             </div>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-wrap">
               <button onClick={addFixture} className="bg-[#800000] text-white px-4 py-2 rounded">Add fixture</button>
-              <button onClick={drawRoundRobin} className="bg-gray-200 px-4 py-2 rounded">
-                Draw round-robin
-              </button>
+              {/* League / groups → round-robin */}
+              {(selected.format === "league" || selected.format === "group_knockout") && (
+                <button onClick={drawRoundRobin} className="bg-gray-200 px-4 py-2 rounded">
+                  Draw group fixtures
+                </button>
+              )}
+              {/* Knockout → straight bracket from all teams */}
+              {selected.format === "knockout" && (
+                <button onClick={() => drawBracket(teams)} className="bg-gray-800 text-white px-4 py-2 rounded">
+                  Build knockout bracket
+                </button>
+              )}
+              {/* Groups+knockout → bracket from group qualifiers */}
+              {selected.format === "group_knockout" && (
+                <button onClick={() => drawBracket(qualifiedTeams(2))} className="bg-gray-800 text-white px-4 py-2 rounded">
+                  Build bracket (top 2 per group)
+                </button>
+              )}
             </div>
           </div>
 
@@ -343,6 +474,9 @@ export default function AdminTournaments() {
                   <button onClick={() => setFixtureStatus(f, "finished")} className="text-xs px-3 py-1 rounded bg-gray-800 text-white">Full time</button>
                   <button onClick={() => deleteFixture(f.id)} className="text-xs px-3 py-1 rounded text-red-600">Delete</button>
                 </div>
+                <div className="flex justify-center mt-2">
+                  <button onClick={() => setConsoleFixture(f)} className="text-xs px-4 py-1.5 rounded bg-[#800000] text-white">⚽ Manage match (goals, cards)</button>
+                </div>
               </div>
             ))}
             {fixtures.length === 0 && <p className="text-gray-500">No fixtures yet.</p>}
@@ -350,39 +484,69 @@ export default function AdminTournaments() {
         </div>
       )}
 
+      {consoleFixture && (
+        <MatchConsole fixture={consoleFixture}
+          onClose={() => { setConsoleFixture(null); void loadDetail(); }} />
+      )}
+
+      {tab === "bracket" && (
+        <TournamentBracket tournamentId={selected.id}
+          teams={Object.fromEntries(teams.map((t) => [t.id, t.name]))} />
+      )}
+
       {tab === "fields" && <TournamentFields tournamentId={selected.id} />}
       {tab === "registrations" && <TournamentRegistrations tournamentId={selected.id} />}
 
       {tab === "standings" && (
         <div className="overflow-x-auto">
-          <table className="w-full border text-sm">
-            <thead>
-              <tr className="bg-gray-100">
-                <th className="border px-2 py-1 text-left">Team</th>
-                <th className="border px-2 py-1">P</th>
-                <th className="border px-2 py-1">W</th>
-                <th className="border px-2 py-1">D</th>
-                <th className="border px-2 py-1">L</th>
-                <th className="border px-2 py-1">GF</th>
-                <th className="border px-2 py-1">GA</th>
-                <th className="border px-2 py-1">Pts</th>
-              </tr>
-            </thead>
-            <tbody>
-              {teams.map((t) => (
-                <tr key={t.id}>
-                  <td className="border px-2 py-1">{t.name}</td>
-                  <td className="border px-2 py-1 text-center">{t.played}</td>
-                  <td className="border px-2 py-1 text-center">{t.won}</td>
-                  <td className="border px-2 py-1 text-center">{t.drawn}</td>
-                  <td className="border px-2 py-1 text-center">{t.lost}</td>
-                  <td className="border px-2 py-1 text-center">{t.goals_for}</td>
-                  <td className="border px-2 py-1 text-center">{t.goals_against}</td>
-                  <td className="border px-2 py-1 text-center font-bold">{t.points}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          {(() => {
+            // Group teams by group_name; ungrouped teams fall under one table.
+            const groups = Array.from(new Set(teams.map((t) => t.group_name).filter(Boolean))) as string[];
+            const blocks = groups.length > 0
+              ? groups.sort().map((g) => ({ title: `Group ${g}`, rows: teams.filter((t) => t.group_name === g) }))
+              : [{ title: "Table", rows: teams }];
+            return blocks.map((block) => {
+              const sorted = [...block.rows].sort((a, b) =>
+                b.points - a.points ||
+                (b.goals_for - b.goals_against) - (a.goals_for - a.goals_against) ||
+                b.goals_for - a.goals_for);
+              return (
+                <div key={block.title} className="mb-6">
+                  <h3 className="font-semibold mb-2">{block.title}</h3>
+                  <table className="w-full border text-sm">
+                    <thead>
+                      <tr className="bg-gray-100">
+                        <th className="border px-2 py-1 text-left">Team</th>
+                        <th className="border px-2 py-1">P</th>
+                        <th className="border px-2 py-1">W</th>
+                        <th className="border px-2 py-1">D</th>
+                        <th className="border px-2 py-1">L</th>
+                        <th className="border px-2 py-1">GF</th>
+                        <th className="border px-2 py-1">GA</th>
+                        <th className="border px-2 py-1">GD</th>
+                        <th className="border px-2 py-1">Pts</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {sorted.map((t) => (
+                        <tr key={t.id}>
+                          <td className="border px-2 py-1">{t.name}</td>
+                          <td className="border px-2 py-1 text-center">{t.played}</td>
+                          <td className="border px-2 py-1 text-center">{t.won}</td>
+                          <td className="border px-2 py-1 text-center">{t.drawn}</td>
+                          <td className="border px-2 py-1 text-center">{t.lost}</td>
+                          <td className="border px-2 py-1 text-center">{t.goals_for}</td>
+                          <td className="border px-2 py-1 text-center">{t.goals_against}</td>
+                          <td className="border px-2 py-1 text-center">{t.goals_for - t.goals_against}</td>
+                          <td className="border px-2 py-1 text-center font-bold">{t.points}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              );
+            });
+          })()}
         </div>
       )}
     </div>
