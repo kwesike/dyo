@@ -17,6 +17,7 @@ import chap from "../assets/chap.jpg";
 import achap from "../assets/achap.jpg";
 import WinnerBanner from "./Winnerbanner";
 import BirthdayBanner from "./Birthdaybanner";
+import LiveMatches from "./Livematches";
 
 /**
  * Each slide carries its own words, so the write-up changes as the images
@@ -161,6 +162,7 @@ export default function HomePage() {
       <Navbar />
       <WinnerBanner />
       <BirthdayBanner />
+      <LiveMatches />
 
       {/* ---------- carousel ---------- */}
       <section
