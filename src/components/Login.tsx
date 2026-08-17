@@ -100,11 +100,16 @@ export default function Login() {
   };
 
   const resetPassword = async () => {
-    if (!email.trim()) return setError("Enter your email first, then tap reset.");
-    await supabase.auth.resetPasswordForEmail(email.trim().toLowerCase(), {
-      redirectTo: `${window.location.origin}/reset-password`,
-    });
-    setError("Reset link sent. Check your email.");
+    setError("");
+    if (!email.trim()) return setError("Enter your email above first, then tap this.");
+    setBusy(true);
+    const { error: err } = await supabase.auth.resetPasswordForEmail(
+      email.trim().toLowerCase(),
+      { redirectTo: `${window.location.origin}/reset-password` },
+    );
+    setBusy(false);
+    if (err) { setError(err.message); return; }
+    setError("✓ Reset link sent — check your email (and spam folder).");
   };
 
   return (

@@ -70,6 +70,8 @@ import AdminBirthdays from "./components/Adminbirthdays";
 import Admintournaments from "./components/Admintournaments";
 import TournamentRegister from "./components/Tournamentregister";
 import TournamentsPage from "./components/Tournamentspage";
+import ResetPassword from "./components/Resetpassword";  // match your file's casing
+
   
 
 import "./components/Layout.css";
@@ -141,6 +143,7 @@ export default function App() {
             <Route path="/winners" element={<WinnerBanner />} />
             <Route path="/birthdays" element={<BirthdayBanner />} />
             <Route path="/tournaments/:slug/register" element={<TournamentRegister />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
 
             {/* ============ ADMIN ============ */}
             <Route path="/admin" element={<RequireAdmin><AdminLayout /></RequireAdmin>}>

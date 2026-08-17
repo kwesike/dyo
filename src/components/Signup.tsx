@@ -139,14 +139,23 @@ export default function Signup() {
 
         {/* Profile photo — this becomes the face on attendance cards, so
             capturing it now saves a trip to the account page later. */}
+        <label className="signup-photo-label">Your photo</label>
+        <p className="signup-photo-hint">Add a clear photo of yourself — it's used on your attendance and player cards.</p>
         <div className="signup-photo">
           {photoPreview ? (
             <img src={photoPreview} alt="" className="signup-photo-preview" />
           ) : (
-            <div className="signup-photo-blank">Add a photo</div>
+            <div className="signup-photo-blank">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                   strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
+                <circle cx="12" cy="13" r="4" />
+              </svg>
+              <span>Add a photo</span>
+            </div>
           )}
           <label className="signup-photo-btn">
-            {photoPreview ? "Change photo" : "Upload a photo"}
+            {photoPreview ? "Change photo" : "📷 Upload a photo"}
             <input type="file" accept="image/*" hidden
                    onChange={(e) => {
                      const f = e.target.files?.[0];

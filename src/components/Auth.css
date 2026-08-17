@@ -150,3 +150,53 @@
   .auth-card h1 { font-size: 1.55rem; }
   .grid-2 { grid-template-columns: 1fr; }
 }
+
+
+/* Signup profile photo picker */
+.signup-photo {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 18px;
+}
+.signup-photo-preview {
+  width: 92px; height: 92px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #ffd700;
+}
+.signup-photo-blank {
+  width: 92px; height: 92px;
+  border-radius: 50%;
+  display: grid; place-items: center;
+  background: rgba(255,255,255,0.08);
+  border: 2px dashed rgba(255,255,255,0.4);
+  color: rgba(255,255,255,0.7);
+  font-size: 0.8rem;
+  text-align: center;
+}
+.signup-photo-btn {
+  cursor: pointer;
+  color: #ffd700;
+  font-size: 0.88rem;
+  font-weight: 600;
+  text-decoration: underline;
+}
+
+
+/* Prominent signup photo upload */
+.signup-photo-label {
+  display: block; font-weight: 700; font-size: 0.95rem;
+  color: #5c0000; margin: 6px 0 2px;
+}
+.signup-photo-hint {
+  font-size: 0.8rem; color: #6b5f5f; margin: 0 0 10px;
+}
+.signup-photo-blank {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 6px; color: #9a8f8f;
+  border: 2px dashed #d9c9c9; border-radius: 12px;
+  padding: 18px; background: #faf5f5;
+}
+.signup-photo-blank span { font-size: 0.85rem; font-weight: 600; }
