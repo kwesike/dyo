@@ -3,43 +3,47 @@ import { supabase } from "../lib/supabaseClient";
 import "./Winnerbanner.css";
 
 /**
- * Birthday celebration — a homepage shout-out for members celebrating today.
- *
- * Uses todays_birthdays(), which returns only first name + day/month — never
- * the birth year or age. So the homepage can celebrate without exposing
- * anyone's age.
+ * Birthday celebration — a homepage shout-out for members celebrating today,
+ * each shown with their photo. Uses todays_birthdays() which returns first
+ * name + day/month + photo (never the birth year/age).
  */
+type Bday = { full_name: string; photo_url: string | null };
+
 export default function BirthdayBanner() {
-  const [names, setNames] = useState<string[]>([]);
+  const [people, setPeople] = useState<Bday[]>([]);
 
   useEffect(() => {
     (async () => {
       const { data } = await supabase.rpc("todays_birthdays");
-      // show first names only, keep it warm and light
-      const first = (data ?? []).map((b: any) =>
-        (b.full_name ?? "").split(" ")[0]).filter(Boolean);
-      setNames(first);
+      setPeople((data ?? []).map((b: any) => ({
+        full_name: b.full_name ?? "",
+        photo_url: b.photo_url ?? null,
+      })).filter((b: Bday) => b.full_name));
     })();
   }, []);
 
-  if (names.length === 0) return null;
+  if (people.length === 0) return null;
 
-  const list =
-    names.length === 1 ? names[0]
-      : names.length === 2 ? `${names[0]} and ${names[1]}`
-      : `${names.slice(0, -1).join(", ")} and ${names[names.length - 1]}`;
+  const firstName = (n: string) => n.split(" ")[0];
+
+  // Each celebrant becomes a chip with photo + first name; duplicate the row
+  // for a seamless scroll.
+  const chips = people.map((p, i) => (
+    <span className="wb-item bday-chip" key={i}>
+      {p.photo_url
+        ? <img className="bday-photo" src={p.photo_url} alt="" />
+        : <span className="bday-photo bday-photo--blank">{firstName(p.full_name)[0]}</span>}
+      🎉 Happy birthday <strong>{firstName(p.full_name)}</strong>!
+    </span>
+  ));
 
   return (
     <div className="wb-banner wb-banner--birthday" role="status">
       <span className="wb-label wb-label--birthday">🎂 Today</span>
       <div className="wb-track">
         <div className="wb-slide">
-          <span className="wb-item">
-            🎉 Happy birthday to <strong>{list}</strong>! Wishing you a blessed year 🎈
-          </span>
-          <span className="wb-item">
-            🎉 Happy birthday to <strong>{list}</strong>! Wishing you a blessed year 🎈
-          </span>
+          {chips}
+          {chips}
         </div>
       </div>
     </div>

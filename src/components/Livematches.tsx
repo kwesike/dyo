@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
-import "./WinnerBanner.css";
+import "./Winnerbanner.css";
 
 /**
  * Live matches on the homepage — shows any match currently in play, updating
