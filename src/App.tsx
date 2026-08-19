@@ -71,6 +71,11 @@ import Admintournaments from "./components/Admintournaments";
 import TournamentRegister from "./components/Tournamentregister";
 import TournamentsPage from "./components/Tournamentspage";
 import ResetPassword from "./components/Resetpassword";  // match your file's casing
+import PageTracker from "./components/PageTracker";
+   // inside <BrowserRouter>, before <Routes>
+   <PageTracker />
+   import AdminAnalytics from "./components/Adminanalytics";
+   <Route path="analytics" element={<RequireSection section="analytics"><AdminAnalytics /></RequireSection>} />
 
   
 

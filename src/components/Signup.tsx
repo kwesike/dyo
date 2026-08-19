@@ -44,6 +44,25 @@ export default function Signup() {
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string>("");
   const [busy, setBusy] = useState(false);
+
+  // The Create account button stays disabled until every required field is
+  // filled correctly — so no one submits an incomplete or invalid form.
+  const dobOk = (() => {
+    if (!form.date_of_birth) return false;
+    const dob = new Date(form.date_of_birth);
+    const age = (Date.now() - dob.getTime()) / (365.25 * 24 * 3600 * 1000);
+    return dob <= new Date() && age >= 5 && age <= 120;
+  })();
+  const emailOk = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email.trim());
+  const formValid =
+    form.full_name.trim().length > 1 &&
+    emailOk &&
+    form.password.length >= 8 &&
+    form.phone.trim().length >= 7 &&
+    !!form.gender &&
+    dobOk &&
+    !!form.archdeaconry &&
+    !!form.church;
   const [error, setError] = useState("");
 
   const set = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) =>
@@ -231,7 +250,7 @@ export default function Signup() {
 
         {error && <p className="auth-error">{error}</p>}
 
-        <button type="submit" disabled={busy}>
+        <button type="submit" disabled={busy || !formValid}>
           {busy ? "Creating your account…" : "Create account"}
         </button>
 
