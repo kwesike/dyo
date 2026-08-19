@@ -29,13 +29,6 @@ export default function AdminBirthdays() {
   const fmt = (d: string) =>
     new Date(d).toLocaleDateString("en-NG", { day: "numeric", month: "long" });
 
-  const age = (dob: string) => {
-    const b = new Date(dob), n = new Date();
-    let a = n.getFullYear() - b.getFullYear();
-    if (n.getMonth() < b.getMonth() || (n.getMonth() === b.getMonth() && n.getDate() < b.getDate())) a--;
-    return a;
-  };
-
   if (loading) return <div className="p-6">Loading…</div>;
 
   return (
@@ -57,7 +50,7 @@ export default function AdminBirthdays() {
                   {r.full_name}
                   {isToday(r.turns_on) && <span className="ml-2 text-pink-700 font-semibold">🎂 Today!</span>}
                 </p>
-                <p className="text-sm text-gray-500">{fmt(r.turns_on)} · turning {age(r.date_of_birth) + (isToday(r.turns_on) ? 0 : 1)}</p>
+                <p className="text-sm text-gray-500">{fmt(r.turns_on)}</p>
               </div>
             </div>
           ))}

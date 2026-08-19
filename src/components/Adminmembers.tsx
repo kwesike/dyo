@@ -293,7 +293,7 @@ export default function AdminMembers() {
               <div className="flex justify-between py-2"><dt className="text-gray-500">Phone</dt><dd>{viewing.phone ?? "—"}</dd></div>
               <div className="flex justify-between py-2"><dt className="text-gray-500">Date of birth</dt>
                 <dd>{viewing.date_of_birth
-                  ? new Date(viewing.date_of_birth).toLocaleDateString("en-NG", { day: "numeric", month: "long", year: "numeric" })
+                  ? new Date(viewing.date_of_birth).toLocaleDateString("en-NG", { day: "numeric", month: "long" })
                   : "—"}</dd></div>
               <div className="flex justify-between py-2"><dt className="text-gray-500">Church</dt><dd>{viewing.church ?? "—"}</dd></div>
               <div className="flex justify-between py-2"><dt className="text-gray-500">Archdeaconry</dt><dd>{viewing.archdeaconry ?? "—"}</dd></div>

@@ -38,6 +38,7 @@ const ICONS = {
   draws: "M12 2l2.4 7.4H22l-6 4.6 2.3 7.4-6.3-4.6L5.7 21.4 8 14 2 9.4h7.6z",
   birthdays: "M12 6V2m0 4a4 4 0 00-4 4v2h8v-2a4 4 0 00-4-4zM4 14h16v6H4zM4 14a2 2 0 012-2h12a2 2 0 012 2",
   tournaments: "M12 2a10 10 0 100 20 10 10 0 000-20zM12 8l1.5 3 3.3.3-2.5 2.2.8 3.2L12 15l-2.9 1.9.8-3.2-2.5-2.2 3.3-.3z",
+  analytics: "M3 3v18h18M7 15l3-4 3 2 4-6",
   programmes: "M8 2v4M16 2v4M3 9h18M5 5h14a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2z",
   store: "M3 3h2l2.2 10.4a1.6 1.6 0 0 0 1.6 1.3h7.9a1.6 1.6 0 0 0 1.6-1.2L20.5 6H5.2M9.5 19.5h.01M16.5 19.5h.01",
   orders: "M6 2h9l5 5v13a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2zM14 2v6h6M9 14h6M9 18h4",
@@ -138,6 +139,8 @@ export default function AdminLayout() {
                   archdeaconry — e.g. Tournaments. */}
               {canAccess("tournaments") &&
                 <Item to="/admin/tournaments" icon={ICONS.tournaments} label="Tournaments" />}
+              {canAccess("analytics") &&
+                <Item to="/admin/analytics" icon={ICONS.analytics} label="Site traffic" />}
               {canAccess("store") &&
                 <Item to="/admin/products" icon={ICONS.store} label="Items" />}
               {canAccess("orders") &&
@@ -212,6 +215,8 @@ export default function AdminLayout() {
                 <Item to="/admin/birthdays" icon={ICONS.birthdays} label="Birthdays" />}
               {(canAccess("tournaments") || isSuperAdmin) &&
                 <Item to="/admin/tournaments" icon={ICONS.tournaments} label="Tournaments" />}
+              {(canAccess("analytics") || isSuperAdmin) &&
+                <Item to="/admin/analytics" icon={ICONS.analytics} label="Site traffic" />}
               {isSuperAdmin &&
                 <Item to="/admin/access" icon={ICONS.members} label="Access & roles" />}
               {(canAccess("audit") || isSuperAdmin) &&

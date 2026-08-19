@@ -25,8 +25,10 @@ export default function MyArchdeaconry() {
   const [registrations, setRegistrations] = useState<any[]>([]);
   const [birthdays, setBirthdays] = useState<any[]>([]);
   const [tourneyRegs, setTourneyRegs] = useState<any[]>([]);
+  const [traffic, setTraffic] = useState<any[]>([]);
+  const [trafficTotal, setTrafficTotal] = useState<any>(null);
   const [albums, setAlbums] = useState<any[]>([]);
-  const [tab, setTab] = useState<"page" | "programmes" | "participants" | "gallery" | "birthdays" | "tournaments">("page");
+  const [tab, setTab] = useState<"page" | "programmes" | "participants" | "gallery" | "birthdays" | "tournaments" | "traffic">("page");
   const [blurb, setBlurb] = useState("");
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState("");
@@ -156,6 +158,15 @@ export default function MyArchdeaconry() {
     setTourneyRegs((regs ?? []).map((r: any) => ({ ...r, team_name: teamMap[r.team_id] })));
   }
 
+  async function loadTraffic() {
+    const [{ data: daily }, { data: total }] = await Promise.all([
+      supabase.rpc("analytics_my_archdeaconry", { p_days: 30 }),
+      supabase.rpc("analytics_my_archdeaconry_total"),
+    ]);
+    setTraffic(daily ?? []);
+    setTrafficTotal(total?.[0] ?? null);
+  }
+
   async function reviewReg(id: string, decision: "approved" | "rejected") {
     const { error } = await supabase.rpc("review_registration", {
       p_registration_id: id, p_decision: decision,
@@ -168,6 +179,7 @@ export default function MyArchdeaconry() {
     if (tab === "participants") void loadRegistrations();
     if (tab === "birthdays") void loadBirthdays();
     if (tab === "tournaments") void loadTourneyRegs();
+    if (tab === "traffic") void loadTraffic();
   }, [tab, programmes]);
 
   async function saveBlurb() {
@@ -258,7 +270,7 @@ export default function MyArchdeaconry() {
       </div>
 
       <div style={{ display: "flex", gap: 6, marginBottom: 22, flexWrap: "wrap" }}>
-        {(["page", "programmes", "participants", "gallery", "birthdays", "tournaments"] as const).map((t) => (
+        {(["page", "programmes", "participants", "gallery", "birthdays", "tournaments", "traffic"] as const).map((t) => (
           <button key={t} onClick={() => setTab(t)}
                   className={tab === t ? "a-btn" : "a-btn a-btn--quiet"}
                   style={{ minHeight: 38, textTransform: "capitalize" }}>
@@ -511,6 +523,44 @@ export default function MyArchdeaconry() {
                   )}
                 </div>
               ))}
+            </div>
+          )}
+        </div>
+      )}
+
+      {tab === "traffic" && (
+        <div className="a-card">
+          <p className="a-eyebrow">Your page traffic</p>
+          <p style={{ margin: "0 0 14px", color: "var(--muted)" }}>
+            Visits to your archdeaconry page.
+          </p>
+          <div style={{ display: "flex", gap: 12, marginBottom: 18, flexWrap: "wrap" }}>
+            {[
+              { label: "Total views", value: trafficTotal?.total_views ?? 0 },
+              { label: "Unique visitors", value: trafficTotal?.unique_visitors ?? 0 },
+              { label: "Today", value: trafficTotal?.today_views ?? 0 },
+            ].map((s) => (
+              <div key={s.label} style={{ border: "1px solid var(--line)", borderRadius: 10,
+                     padding: "12px 18px", minWidth: 120 }}>
+                <p style={{ fontSize: "0.72rem", textTransform: "uppercase", color: "var(--muted)", margin: 0 }}>{s.label}</p>
+                <p style={{ fontSize: "1.5rem", fontWeight: 700, margin: "2px 0 0" }}>{Number(s.value).toLocaleString()}</p>
+              </div>
+            ))}
+          </div>
+          {traffic.length === 0 ? (
+            <p style={{ color: "var(--muted)" }}>No visits recorded yet.</p>
+          ) : (
+            <div style={{ display: "flex", alignItems: "flex-end", gap: 3, height: 140,
+                          borderBottom: "1px solid var(--line)", paddingBottom: 4 }}>
+              {(() => {
+                const max = Math.max(1, ...traffic.map((d: any) => Number(d.views)));
+                return traffic.map((d: any) => (
+                  <div key={d.day} title={`${new Date(d.day).toLocaleDateString("en-NG",
+                        { day: "numeric", month: "short" })}: ${d.views} views`}
+                       style={{ flex: 1, background: "#800000", borderRadius: "3px 3px 0 0",
+                                height: `${(Number(d.views) / max) * 100}%`, minHeight: 2 }} />
+                ));
+              })()}
             </div>
           )}
         </div>

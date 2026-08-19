@@ -72,12 +72,10 @@ import TournamentRegister from "./components/Tournamentregister";
 import TournamentsPage from "./components/Tournamentspage";
 import ResetPassword from "./components/Resetpassword";  // match your file's casing
 import PageTracker from "./components/PageTracker";
+import AdminAnalytics from "./components/Adminanalytics";
    // inside <BrowserRouter>, before <Routes>
-   <PageTracker />
-   import AdminAnalytics from "./components/Adminanalytics";
-   <Route path="analytics" element={<RequireSection section="analytics"><AdminAnalytics /></RequireSection>} />
+   
 
-  
 
 import "./components/Layout.css";
 
@@ -96,6 +94,7 @@ export default function App() {
       <AuthProvider>
         <CartProvider>
           <Luckydrawwidget />
+          <PageTracker />
           <Routes>
             {/* ============ PUBLIC ============ */}
             <Route path="/" element={<HomePage />} />
@@ -162,6 +161,7 @@ export default function App() {
 
               <Route path="products" element={<RequireSection section="store"><AdminProducts /></RequireSection>} />
               <Route path="orders" element={<RequireSection section="orders"><AdminOrders /></RequireSection>} />
+               <Route path="analytics" element={<RequireSection section="analytics"><AdminAnalytics /></RequireSection>} />
 
               <Route path="carousel" element={<RequireSection section="carousel"><AdminCarousel /></RequireSection>} />
               <Route path="announcements" element={<RequireSection section="announcements"><AdminAnnouncements /></RequireSection>} />
