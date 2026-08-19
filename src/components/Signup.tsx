@@ -57,6 +57,22 @@ export default function Signup() {
       return setError("You're offline. Reconnect and try again — nothing has been lost.");
     }
 
+    // Sanity-check the date of birth — catch future dates and impossible years.
+    if (form.date_of_birth) {
+      const dob = new Date(form.date_of_birth);
+      const today = new Date();
+      const age = (today.getTime() - dob.getTime()) / (365.25 * 24 * 3600 * 1000);
+      if (dob > today) {
+        return setError("Your date of birth can't be in the future — please check the year.");
+      }
+      if (age < 5) {
+        return setError("Please enter your real date of birth (the year looks off).");
+      }
+      if (age > 120) {
+        return setError("Please check your date of birth — that year seems too far back.");
+      }
+    }
+
     setBusy(true);
 
     try {
@@ -188,7 +204,12 @@ export default function Signup() {
           <input type="password" name="password" placeholder="Password (min. 8 characters)"
                  minLength={8} value={form.password} onChange={set} required
                  disabled={busy} autoComplete="new-password" />
+          <label className="signup-field-label">
+            Date of birth
+            <span className="signup-field-hint">Your real birth date — day, month and year (e.g. 15 March 1998).</span>
+          </label>
           <input type="date" name="date_of_birth" value={form.date_of_birth}
+                 max={new Date().toISOString().split("T")[0]}
                  onChange={set} required disabled={busy} />
 
           <select name="archdeaconry" value={form.archdeaconry} onChange={set}

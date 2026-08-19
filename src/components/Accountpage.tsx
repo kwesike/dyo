@@ -116,6 +116,25 @@ export default function AccountPage() {
         <p>{profile?.email}</p>
       </header>
 
+      {/* Prompt members whose date of birth looks wrong (future or impossible
+          year) to correct it — their birthday won't be right otherwise. */}
+      {(() => {
+        if (!profile?.date_of_birth) return null;
+        const dob = new Date(profile.date_of_birth);
+        const today = new Date();
+        const age = (today.getTime() - dob.getTime()) / (365.25 * 24 * 3600 * 1000);
+        if (dob > today || age < 5 || age > 120) {
+          return (
+            <div className="account-dob-warning">
+              ⚠️ Your date of birth looks incorrect ({dob.toLocaleDateString("en-NG",
+                { day: "numeric", month: "long", year: "numeric" })}).
+              Please update it below with your correct birth date so your birthday shows on the right day.
+            </div>
+          );
+        }
+        return null;
+      })()}
+
       <div className="account-body">
         {/* photo + details */}
         <section className="account-card">
@@ -148,7 +167,8 @@ export default function AccountPage() {
               <input name="phone" value={form.phone ?? ""} onChange={set} />
             </label>
             <label>Date of birth
-              <input type="date" name="date_of_birth" value={form.date_of_birth ?? ""} onChange={set} />
+              <input type="date" name="date_of_birth" value={form.date_of_birth ?? ""}
+                     max={new Date().toISOString().split("T")[0]} onChange={set} />
             </label>
             <label>Archdeaconry
               <select name="archdeaconry" value={form.archdeaconry ?? ""} onChange={set}>

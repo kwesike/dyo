@@ -200,3 +200,13 @@
   padding: 18px; background: #faf5f5;
 }
 .signup-photo-blank span { font-size: 0.85rem; font-weight: 600; }
+
+
+/* Signup field label + hint (for date of birth guidance) */
+.signup-field-label {
+  display: block; font-size: 0.82rem; font-weight: 600;
+  color: #5c0000; margin: 4px 0 2px;
+}
+.signup-field-hint {
+  display: block; font-weight: 400; color: #6b5f5f; font-size: 0.76rem; margin-top: 1px;
+}
