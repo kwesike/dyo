@@ -1,5 +1,8 @@
 import { useEffect, useState } from "react";
 import { supabase } from "../lib/supabaseClient";
+import {
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer,
+} from "recharts";
 
 /**
  * Site analytics dashboard — total visits, per-day trend, top pages,
@@ -39,8 +42,6 @@ export default function AdminAnalytics() {
 
   if (loading) return <div className="p-6">Loading analytics…</div>;
 
-  const maxDaily = Math.max(1, ...daily.map((d) => Number(d.views)));
-
   return (
     <div className="p-6 max-w-5xl mx-auto">
       <h1 className="text-2xl font-bold mb-1">Site traffic</h1>
@@ -75,17 +76,21 @@ export default function AdminAnalytics() {
         {daily.length === 0 ? (
           <p className="text-gray-500 text-sm">No views recorded yet.</p>
         ) : (
-          <div className="flex items-end gap-1 h-40">
-            {daily.map((d) => (
-              <div key={d.day} className="flex-1 flex flex-col items-center justify-end group relative">
-                <div className="w-full bg-[#800000] rounded-t hover:bg-[#a00000]"
-                     style={{ height: `${(Number(d.views) / maxDaily) * 100}%`, minHeight: 2 }} />
-                <span className="absolute -top-6 text-xs bg-black text-white px-1 rounded opacity-0 group-hover:opacity-100 whitespace-nowrap">
-                  {new Date(d.day).toLocaleDateString("en-NG", { day: "numeric", month: "short" })}: {d.views}
-                </span>
-              </div>
-            ))}
-          </div>
+          <ResponsiveContainer width="100%" height={260}>
+            <BarChart data={daily.map((d: any) => ({
+              day: new Date(d.day).toLocaleDateString("en-NG", { day: "numeric", month: "short" }),
+              views: Number(d.views),
+              visitors: Number(d.visitors),
+            }))}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#eee" />
+              <XAxis dataKey="day" tick={{ fontSize: 11 }} />
+              <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
+              <Tooltip />
+              <Legend />
+              <Bar dataKey="views" name="Views" fill="#800000" radius={[3, 3, 0, 0]} />
+              <Bar dataKey="visitors" name="Unique visitors" fill="#d4a017" radius={[3, 3, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
         )}
       </div>
 

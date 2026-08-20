@@ -244,7 +244,7 @@ export async function composeAttendingCard(opts: {
     box = { x: cfg.photo.cx * W - d / 2, y: cfg.photo.cy * H - d / 2, w: d, h: d };
   }
 
-  const pad = Math.min(box.w, box.h) * 0.09;
+  const pad = Math.min(box.w, box.h) * 0.06;
   const inner = {
     x: box.x + pad,
     y: box.y + pad,
@@ -252,25 +252,24 @@ export async function composeAttendingCard(opts: {
     h: box.h - pad * 2,
   };
 
-  // 3. Split the panel: portrait above, details below.
+  // 3. Split the panel: photo on top (the majority), details below.
+  //    The photo should DOMINATE the panel like a passport photo — tall
+  //    enough for the face to read clearly — with the name/church/archdeaconry
+  //    in a compact block underneath. We give the photo ~70% of the height.
   const hasDetails = !!(opts.details.church || opts.details.archdeaconry);
-  const textShare = hasDetails ? 0.40 : 0.26;  // reserve clear space below the photo for details
+  const textShare = hasDetails ? 0.30 : 0.18;  // details get the lower band
   const textHeight = inner.h * textShare;
   const photoHeight = inner.h - textHeight;
 
-  // The photo sits in the upper portion of the panel. Rather than stretch it
-  // to the full panel width (which crops the top of the head when the photo is
-  // portrait), we fit it to a natural portrait aspect (4:5) and CENTRE it, so
-  // the whole face shows with margin around it.
-  const maxPhotoW = inner.w * 0.86;
-  const maxPhotoH = photoHeight * 0.96;
-  // portrait 4:5 — width derived from height, capped by width
-  let photoH = maxPhotoH;
-  let photoW = photoH * 0.8;
-  if (photoW > maxPhotoW) { photoW = maxPhotoW; photoH = photoW / 0.8; }
+  // Fill most of the available photo area. Prefer a portrait-ish photo so a
+  // face has vertical room, but never wider than the panel. We aim the photo
+  // width at ~78% of the panel (leaving side margin) and let the height fill
+  // the photo band; drawCover crops cleanly with a top bias so the head shows.
+  const photoW = inner.w * 0.80;
+  const photoH = photoHeight * 0.98;
   const photoX = inner.x + (inner.w - photoW) / 2;   // centre horizontally
-  const photoY = inner.y;
-  const radius = Math.min(photoW, photoH) * 0.05;
+  const photoY = inner.y;                             // sit at the top of the panel
+  const radius = Math.min(photoW, photoH) * 0.06;
 
   ctx.save();
   ctx.beginPath();

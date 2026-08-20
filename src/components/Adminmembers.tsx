@@ -76,6 +76,14 @@ export default function AdminMembers() {
     (m) => m.role === "admin" || m.role === "super_admin",
   ).length;
 
+  async function deleteMember(member: Member) {
+    if (!confirm(`Delete ${member.full_name}? This removes their profile and cannot be undone.`)) return;
+    const { error } = await supabase.rpc("delete_member", { p_member_id: member.id });
+    if (error) { alert(error.message); return; }
+    setViewing(null);
+    void load();
+  }
+
   async function changeRole(member: Member, role: Role) {
     setMessage("");
     if (member.id === profile?.id) {
@@ -301,10 +309,18 @@ export default function AdminMembers() {
                 <dd>{new Date(viewing.created_at).toLocaleDateString("en-NG")}</dd></div>
             </dl>
 
-            <button onClick={() => setViewing(null)}
-                    className="mt-5 w-full bg-gray-100 rounded py-2 text-sm">
-              Close
-            </button>
+            <div className="mt-5 flex gap-2">
+              <button onClick={() => setViewing(null)}
+                      className="flex-1 bg-gray-100 rounded py-2 text-sm">
+                Close
+              </button>
+              {isSuperAdmin && viewing.role !== "super_admin" && (
+                <button onClick={() => deleteMember(viewing)}
+                        className="flex-1 bg-red-600 text-white rounded py-2 text-sm">
+                  Delete member
+                </button>
+              )}
+            </div>
           </div>
         </div>
       )}
