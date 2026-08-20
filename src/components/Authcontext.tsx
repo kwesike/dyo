@@ -39,7 +39,7 @@ interface AuthValue {
 export const ADMIN_SECTIONS = [
   "overview", "programmes", "registrations", "store", "orders", "donations", "receipts", "draws", "vouchers", "tags",
   "announcements", "gallery", "blog", "carousel", "leadership",
-  "archdeaconries", "pages", "members", "birthdays", "tournaments", "audit",
+  "archdeaconries", "pages", "members", "birthdays", "tournaments", "analytics", "audit",
 ] as const;
 
 const AuthContext = createContext<AuthValue | undefined>(undefined);
